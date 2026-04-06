@@ -37,6 +37,11 @@ Each time you change code, review the conventions below and update this file if 
 - Never add FK constraints in migrations — referential integrity is managed at the application layer
 - Seed data lives in `src/database/seeds/` and runs via `pnpm seed` — never embed seed in migrations
 
+### Repository Layer
+- **Repositories handle simple queries only** — filtering, sorting, pagination, basic joins. No business logic.
+- **Business logic belongs in services** — aggregations, calculations (e.g. 1RM, volume), comparisons across periods, derived values. If a query needs domain knowledge to make sense, it's service logic.
+- A repository does not know *why* data is being fetched — only *how* to fetch it.
+
 ### Entities
 - All entity columns must use `!` non-null assertions (strict TS mode)
 - All entities must include `@CreateDateColumn created_at` and `@UpdateDateColumn updated_at`

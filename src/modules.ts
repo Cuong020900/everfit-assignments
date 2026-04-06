@@ -23,7 +23,7 @@ const Modules = [
       password: config.get<string>(EEnvKey.DB_PASSWORD),
       synchronize: false,
       logging: config.get<string>(EEnvKey.NODE_ENV) === 'development',
-      entities: [`${__dirname}/modules/**/*.entity{.ts,.js}`],
+      entities: [`${__dirname}/model/entities/*.entity{.ts,.js}`],
       migrations: [`${__dirname}/database/migrations/*{.ts,.js}`],
       migrationsRun: true,
     }),
