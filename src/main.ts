@@ -1,8 +1,11 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '@src/app.module';
+import { EEnvKey } from '@src/shared/constants/env-keys.enum';
 import { GlobalExceptionFilter } from '@src/shared/filters/http-exception.filter';
+import { TransformResponseInterceptor } from '@src/shared/interceptors/transform-response.interceptor';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
@@ -13,9 +16,11 @@ async function bootstrap(): Promise<void> {
 
   app.use(helmet());
 
-  const corsOrigins = process.env.CORS_ORIGINS;
+  const config = app.get(ConfigService);
+
+  const corsOrigins = config.get<string>(EEnvKey.CORS_ORIGINS);
   app.enableCors({
-    origin: corsOrigins !== undefined ? corsOrigins.split(',') : '*',
+    origin: corsOrigins != null ? corsOrigins.split(',') : '*',
     methods: ['GET', 'POST'],
   });
 
@@ -29,6 +34,7 @@ async function bootstrap(): Promise<void> {
   );
 
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Workout Tracking API')
@@ -39,8 +45,7 @@ async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const rawPort = process.env.PORT;
-  const port: number = rawPort !== undefined ? Number.parseInt(rawPort, 10) : 3000;
+  const port = config.get<number>(EEnvKey.PORT, 3000);
   await app.listen(port);
 }
 

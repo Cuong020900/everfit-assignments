@@ -1,19 +1,19 @@
 services:
-  api:
-    build: .
-    ports:
-      - '3000:3000'
-    environment:
-      NODE_ENV: development
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: workout_db
-      DB_USER: workout
-      DB_PASSWORD: workout
-      LOG_LEVEL: info
-    depends_on:
-      db:
-        condition: service_healthy
+  # api:
+  #   build: .
+  #   ports:
+  #     - '3000:3000'
+  #   environment:
+  #     NODE_ENV: development
+  #     DB_HOST: db
+  #     DB_PORT: 5432
+  #     DB_NAME: workout_db
+  #     DB_USER: workout
+  #     DB_PASSWORD: workout
+  #     LOG_LEVEL: info
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
 
   db:
     image: postgres:16-alpine
