@@ -1,5 +1,5 @@
-import { TrainingFrequencyPlugin } from '@src/modules/exercise-metadata/plugins/training-frequency.plugin';
 import type { WorkoutData } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
+import { TrainingFrequencyPlugin } from '@src/modules/exercise-metadata/plugins/training-frequency.plugin';
 
 const makeData = (entries: WorkoutData['entries'], from?: string, to?: string): WorkoutData => ({
   userId: 'user-1',

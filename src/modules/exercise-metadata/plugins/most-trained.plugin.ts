@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { MostTrainedEntry } from '@src/modules/exercise-metadata/dto/get-insights.dto';
-import type { InsightPlugin, WorkoutData } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
+import type {
+  InsightPlugin,
+  WorkoutData,
+} from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 
 @Injectable()
 export class MostTrainedPlugin implements InsightPlugin {

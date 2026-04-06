@@ -1,6 +1,6 @@
-import type { ApiResult } from '@src/shared/types/api-response.type';
 import { CompareTo } from '@src/shared/enums/compare-to.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
+import type { ApiResult } from '@src/shared/types/api-response.type';
 import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export interface PRRecord {

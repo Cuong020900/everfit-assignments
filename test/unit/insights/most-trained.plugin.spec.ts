@@ -1,5 +1,5 @@
-import { MostTrainedPlugin } from '@src/modules/exercise-metadata/plugins/most-trained.plugin';
 import type { WorkoutData } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
+import { MostTrainedPlugin } from '@src/modules/exercise-metadata/plugins/most-trained.plugin';
 
 const makeData = (entries: WorkoutData['entries']): WorkoutData => ({
   userId: 'user-1',
@@ -16,9 +16,24 @@ describe('MostTrainedPlugin', () => {
   it('counts sessions per exercise (unique dates)', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Bench Press', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 100 }] },
-        { date: '2024-01-02', exerciseName: 'Bench Press', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 100 }] },
-        { date: '2024-01-01', exerciseName: 'Squat', muscleGroup: 'legs', sets: [{ reps: 5, weightKg: 120 }] },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench Press',
+          muscleGroup: 'chest',
+          sets: [{ reps: 5, weightKg: 100 }],
+        },
+        {
+          date: '2024-01-02',
+          exerciseName: 'Bench Press',
+          muscleGroup: 'chest',
+          sets: [{ reps: 5, weightKg: 100 }],
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Squat',
+          muscleGroup: 'legs',
+          sets: [{ reps: 5, weightKg: 120 }],
+        },
       ]),
     );
 
@@ -31,7 +46,15 @@ describe('MostTrainedPlugin', () => {
   it('computes total volume per exercise (sum of reps × weightKg)', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Bench Press', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 100 }, { reps: 3, weightKg: 110 }] },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench Press',
+          muscleGroup: 'chest',
+          sets: [
+            { reps: 5, weightKg: 100 },
+            { reps: 3, weightKg: 110 },
+          ],
+        },
       ]),
     );
 
@@ -41,9 +64,24 @@ describe('MostTrainedPlugin', () => {
   it('sorts by session count descending', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Squat', muscleGroup: 'legs', sets: [{ reps: 5, weightKg: 100 }] },
-        { date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 80 }] },
-        { date: '2024-01-02', exerciseName: 'Bench', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 80 }] },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Squat',
+          muscleGroup: 'legs',
+          sets: [{ reps: 5, weightKg: 100 }],
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 5, weightKg: 80 }],
+        },
+        {
+          date: '2024-01-02',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 5, weightKg: 80 }],
+        },
       ]),
     );
 

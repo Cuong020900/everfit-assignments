@@ -59,7 +59,7 @@ export class TypeOrmExerciseMetadataRepository implements IExerciseMetadataRepos
         });
       }
       if (row.reps !== null && row.weight_kg !== null) {
-        entryMap.get(key)!.sets.push({
+        entryMap.get(key)?.sets.push({
           reps: Number(row.reps),
           weightKg: parseFloat(row.weight_kg),
         });

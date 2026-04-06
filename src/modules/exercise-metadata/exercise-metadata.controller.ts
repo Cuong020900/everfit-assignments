@@ -1,5 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { GetInsightsDTO, type GetInsightsResult } from '@src/modules/exercise-metadata/dto/get-insights.dto';
+import {
+  GetInsightsDTO,
+  type GetInsightsResult,
+} from '@src/modules/exercise-metadata/dto/get-insights.dto';
 import { ExerciseMetadataService } from '@src/modules/exercise-metadata/exercise-metadata.service';
 
 @Controller('workouts')

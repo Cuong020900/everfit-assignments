@@ -7,10 +7,10 @@ import { EXERCISE_METADATA_REPOSITORY } from '@src/model/repositories/exercise-m
 import { ExerciseMetadataController } from '@src/modules/exercise-metadata/exercise-metadata.controller';
 import { ExerciseMetadataService } from '@src/modules/exercise-metadata/exercise-metadata.service';
 import { GapsPlugin } from '@src/modules/exercise-metadata/plugins/gaps.plugin';
+import { INSIGHT_PLUGINS } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 import { MostTrainedPlugin } from '@src/modules/exercise-metadata/plugins/most-trained.plugin';
 import { MuscleGroupBalancePlugin } from '@src/modules/exercise-metadata/plugins/muscle-group-balance.plugin';
 import { TrainingFrequencyPlugin } from '@src/modules/exercise-metadata/plugins/training-frequency.plugin';
-import { INSIGHT_PLUGINS } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 import { TypeOrmExerciseMetadataRepository } from '@src/modules/exercise-metadata/repositories/typeorm-exercise-metadata.repository';
 
 @Module({

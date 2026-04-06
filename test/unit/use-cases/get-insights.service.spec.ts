@@ -31,9 +31,7 @@ describe('ExerciseMetadataService.getInsights()', () => {
   });
 
   it('passes WorkoutData (with entries) to every plugin', async () => {
-    const entries = [
-      { date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [] },
-    ];
+    const entries = [{ date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [] }];
     repo.findWorkoutData.mockResolvedValue(entries);
     const plugin = makePlugin('mostTrained', []);
     (service as any).plugins = [plugin];

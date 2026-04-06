@@ -47,8 +47,8 @@ describe('WorkoutSetService.getPRs()', () => {
   it('returns highest volume set as maxVolume (reps × weightKg)', async () => {
     repo.findPRSets.mockResolvedValue([
       makeSet({ reps: 5, weightKg: 100 }), // volume = 500
-      makeSet({ reps: 10, weightKg: 80 }),  // volume = 800 ← winner
-      makeSet({ reps: 3, weightKg: 120 }),  // volume = 360
+      makeSet({ reps: 10, weightKg: 80 }), // volume = 800 ← winner
+      makeSet({ reps: 3, weightKg: 120 }), // volume = 360
     ]);
 
     const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
@@ -59,8 +59,8 @@ describe('WorkoutSetService.getPRs()', () => {
 
   it('returns best estimated 1RM using Epley formula', async () => {
     repo.findPRSets.mockResolvedValue([
-      makeSet({ reps: 5, weightKg: 100, date: '2024-01-10' }),  // 1RM ≈ 116.67
-      makeSet({ reps: 1, weightKg: 110, date: '2024-01-15' }),  // 1RM ≈ 113.67
+      makeSet({ reps: 5, weightKg: 100, date: '2024-01-10' }), // 1RM ≈ 116.67
+      makeSet({ reps: 1, weightKg: 110, date: '2024-01-15' }), // 1RM ≈ 113.67
     ]);
 
     const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
@@ -110,7 +110,7 @@ describe('WorkoutSetService.getPRs()', () => {
   it('includes previous period when compareTo=previousPeriod', async () => {
     repo.findPRSets
       .mockResolvedValueOnce([makeSet({ weightKg: 120 })]) // current
-      .mockResolvedValueOnce([makeSet({ weightKg: 100 })]) // previous
+      .mockResolvedValueOnce([makeSet({ weightKg: 100 })]); // previous
 
     const result = await service.getPRs({
       userId: USER_ID,
@@ -124,9 +124,7 @@ describe('WorkoutSetService.getPRs()', () => {
   });
 
   it('previous is null PRs when no data in previous period', async () => {
-    repo.findPRSets
-      .mockResolvedValueOnce([makeSet({ weightKg: 120 })])
-      .mockResolvedValueOnce([]);
+    repo.findPRSets.mockResolvedValueOnce([makeSet({ weightKg: 120 })]).mockResolvedValueOnce([]);
 
     const result = await service.getPRs({
       userId: USER_ID,

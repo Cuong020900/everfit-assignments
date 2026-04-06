@@ -1,5 +1,5 @@
-import type { PaginatedResult } from '@src/shared/types/api-response.type';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
+import type { PaginatedResult } from '@src/shared/types/api-response.type';
 import { Type } from 'class-transformer';
 import {
   IsDateString,

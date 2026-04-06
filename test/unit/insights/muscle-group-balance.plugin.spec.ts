@@ -17,8 +17,18 @@ describe('MuscleGroupBalancePlugin', () => {
   it('groups volume by muscle group as percentages', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [{ reps: 10, weightKg: 100 }] }, // 1000
-        { date: '2024-01-01', exerciseName: 'Squat', muscleGroup: 'legs', sets: [{ reps: 10, weightKg: 100 }] },  // 1000
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 10, weightKg: 100 }],
+        }, // 1000
+        {
+          date: '2024-01-01',
+          exerciseName: 'Squat',
+          muscleGroup: 'legs',
+          sets: [{ reps: 10, weightKg: 100 }],
+        }, // 1000
       ]),
     );
 
@@ -29,7 +39,12 @@ describe('MuscleGroupBalancePlugin', () => {
   it('puts null muscleGroup exercises into "unknown" bucket', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Mystery', muscleGroup: null, sets: [{ reps: 10, weightKg: 100 }] },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Mystery',
+          muscleGroup: null,
+          sets: [{ reps: 10, weightKg: 100 }],
+        },
       ]),
     );
 
@@ -39,9 +54,24 @@ describe('MuscleGroupBalancePlugin', () => {
   it('percentages sum to 100', () => {
     const result = plugin.compute(
       makeData([
-        { date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [{ reps: 5, weightKg: 80 }] },
-        { date: '2024-01-01', exerciseName: 'Squat', muscleGroup: 'legs', sets: [{ reps: 3, weightKg: 120 }] },
-        { date: '2024-01-01', exerciseName: 'Mystery', muscleGroup: null, sets: [{ reps: 10, weightKg: 50 }] },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 5, weightKg: 80 }],
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Squat',
+          muscleGroup: 'legs',
+          sets: [{ reps: 3, weightKg: 120 }],
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Mystery',
+          muscleGroup: null,
+          sets: [{ reps: 10, weightKg: 50 }],
+        },
       ]),
     );
 

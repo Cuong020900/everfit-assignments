@@ -53,10 +53,7 @@ describe('GapsPlugin', () => {
   it('does not flag exercise done only once (not regular)', () => {
     const to = '2024-02-15';
     const result = plugin.compute(
-      makeData(
-        [{ date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [] }],
-        to,
-      ),
+      makeData([{ date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [] }], to),
     );
 
     expect(result).toHaveLength(0);

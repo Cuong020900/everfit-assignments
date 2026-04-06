@@ -3,8 +3,14 @@ import {
   EXERCISE_METADATA_REPOSITORY,
   type IExerciseMetadataRepository,
 } from '@src/model/repositories/exercise-metadata/exercise-metadata.repository.interface';
-import type { GetInsightsDTO, GetInsightsResult } from '@src/modules/exercise-metadata/dto/get-insights.dto';
-import { INSIGHT_PLUGINS, type InsightPlugin } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
+import type {
+  GetInsightsDTO,
+  GetInsightsResult,
+} from '@src/modules/exercise-metadata/dto/get-insights.dto';
+import {
+  INSIGHT_PLUGINS,
+  type InsightPlugin,
+} from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 
 @Injectable()
 export class ExerciseMetadataService {

@@ -3,12 +3,15 @@ import type { IWorkoutSetRepository } from '@src/model/repositories/workout-set/
 import { WORKOUT_SET_REPOSITORY } from '@src/model/repositories/workout-set/workout-set.repository.interface';
 import type { PRSetResult } from '@src/model/repositories/workout-set/workout-set.repository.types';
 import type { GetPRDTO, GetPRResult, PRData } from '@src/modules/workout-set/dto/get-pr.dto';
-import type { GetProgressDTO, GetProgressResult } from '@src/modules/workout-set/dto/get-progress.dto';
+import type {
+  GetProgressDTO,
+  GetProgressResult,
+} from '@src/modules/workout-set/dto/get-progress.dto';
 import { CompareTo } from '@src/shared/enums/compare-to.enum';
 import { GroupBy } from '@src/shared/enums/group-by.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
-import { epley1RM } from '@src/shared/utils/epley';
 import { fromKg } from '@src/shared/units/unit-converter';
+import { epley1RM } from '@src/shared/utils/epley';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 
@@ -127,7 +130,11 @@ export class WorkoutSetService {
     groupBy: GroupBy,
   ): { period: string; bestWeightKg: number; volumeKg: number }[] {
     if (groupBy === GroupBy.DAILY) {
-      return dailyBests.map((d) => ({ period: d.date, bestWeightKg: d.bestWeightKg, volumeKg: d.volumeKg }));
+      return dailyBests.map((d) => ({
+        period: d.date,
+        bestWeightKg: d.bestWeightKg,
+        volumeKg: d.volumeKg,
+      }));
     }
 
     const buckets = new Map<string, { weights: number[]; volumeKg: number }>();

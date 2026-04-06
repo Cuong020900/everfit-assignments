@@ -1,6 +1,6 @@
-import type { ApiResult } from '@src/shared/types/api-response.type';
 import { GroupBy } from '@src/shared/enums/group-by.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
+import type { ApiResult } from '@src/shared/types/api-response.type';
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export interface ProgressPoint {
