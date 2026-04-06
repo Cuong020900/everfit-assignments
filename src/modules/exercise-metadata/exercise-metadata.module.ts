@@ -10,9 +10,6 @@ import { ExerciseMetadataService } from '@src/modules/exercise-metadata/exercise
 @Module({
   imports: [TypeOrmModule.forFeature([ExerciseMetadata, WorkoutEntry, WorkoutSet])],
   controllers: [ExerciseMetadataController],
-  providers: [
-    ExerciseMetadataService,
-    { provide: EXERCISE_METADATA_REPOSITORY, useValue: null },
-  ],
+  providers: [ExerciseMetadataService, { provide: EXERCISE_METADATA_REPOSITORY, useValue: null }],
 })
 export class ExerciseMetadataModule {}

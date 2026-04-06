@@ -1,6 +1,6 @@
 import { BaseEntity } from '@src/model/entities/base.entity';
 import { WorkoutEntry } from '@src/model/entities/workout-entry.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 const numericTransformer = {
   from: (v: string | null): number => (v === null ? 0 : parseFloat(v)),
@@ -9,6 +9,9 @@ const numericTransformer = {
 
 @Entity('workout_sets')
 export class WorkoutSet extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
   @ManyToOne(
     () => WorkoutEntry,
     (entry) => entry.sets,

@@ -9,9 +9,6 @@ import { WorkoutSetService } from '@src/modules/workout-set/workout-set.service'
 @Module({
   imports: [TypeOrmModule.forFeature([WorkoutEntry, WorkoutSet])],
   controllers: [WorkoutSetController],
-  providers: [
-    WorkoutSetService,
-    { provide: WORKOUT_SET_REPOSITORY, useValue: null },
-  ],
+  providers: [WorkoutSetService, { provide: WORKOUT_SET_REPOSITORY, useValue: null }],
 })
 export class WorkoutSetModule {}

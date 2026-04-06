@@ -37,6 +37,12 @@ Each time you change code, review the conventions below and update this file if 
 - Never add FK constraints in migrations — referential integrity is managed at the application layer
 - Seed data lives in `src/database/seeds/` and runs via `pnpm seed` — never embed seed in migrations
 
+### API Response Shape
+- **Always use `ApiResponse<T>`** from `@src/shared/types/api-response.type` for controller return types
+- Controllers return `{ data: await this.service.method() }` — `TransformResponseInterceptor` detects the `data` key and passes through without double-wrapping
+- Services return plain data types — they are unaware of the HTTP response envelope
+- Response/display interfaces (`*Display`, `*Result`) belong in `dto/*.dto.ts`, not in service files
+
 ### Repository Layer
 - **Repositories handle simple queries only** — filtering, sorting, pagination, basic joins. No business logic.
 - **Business logic belongs in services** — aggregations, calculations (e.g. 1RM, volume), comparisons across periods, derived values. If a query needs domain knowledge to make sense, it's service logic.
