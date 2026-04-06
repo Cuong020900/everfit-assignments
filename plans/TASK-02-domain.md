@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | `[~]` In progress — tests written, implementation missing |
+| **Status** | `[x]` Done |
 | **Estimated effort** | ~1 hour |
 | **Blocks** | TASK-03, TASK-04, TASK-05, TASK-06, TASK-07, TASK-08 |
 | **Blocked by** | TASK-01 |

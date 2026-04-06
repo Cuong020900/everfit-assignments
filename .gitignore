@@ -2,3 +2,4 @@
 .specify/
 node_modules/
 dist/
+reports

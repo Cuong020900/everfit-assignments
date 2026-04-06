@@ -7,7 +7,7 @@ Tasks are executed in order. Dependencies are declared explicitly in each file.
 
 ```
 TASK-01  Project Scaffold & Infrastructure     [DONE]
-   └── TASK-02  Domain Layer                    [IN PROGRESS — tests written, impl missing]
+   └── TASK-02  Domain Layer                    [DONE]
          └── TASK-03  Repository                [pending]
                └── TASK-04  UC-1: Log Workout   [pending]
                      ├── TASK-05  UC-2: History  [pending]
@@ -30,8 +30,8 @@ TASK-01 → TASK-02 → TASK-03 → TASK-04 → (05/06/07/08 in parallel) → TA
 | Task | File | Status | Notes |
 |------|------|--------|-------|
 | TASK-01 | TASK-01-scaffold.md | ✅ Done | Minor diffs from plan: uses DB_* vars, workout/workout_db names |
-| TASK-02 | TASK-02-domain.md | 🔄 In progress | Tests written (RED), source files missing |
-| TASK-03 | TASK-03-repository.md | ⏳ Pending | |
+| TASK-02 | TASK-02-domain.md | ✅ Done | All 17 unit tests GREEN; migrations split per table; @src/ aliases enforced |
+| TASK-03 | TASK-03-repository.md | 🔄 Next | Unblocked — implement IWorkoutRepository + TypeORM impl |
 | TASK-04 | TASK-04-uc-log-workout.md | ⏳ Pending | |
 | TASK-05 | TASK-05-uc-get-history.md | ⏳ Pending | |
 | TASK-06 | TASK-06-uc-get-pr.md | ⏳ Pending | |
@@ -55,11 +55,8 @@ TASK-01 → TASK-02 → TASK-03 → TASK-04 → (05/06/07/08 in parallel) → TA
 
 ## Start Next Task
 
-TASK-02 is unblocked. Run unit tests first to see RED:
+TASK-03 is unblocked. Implement `IWorkoutRepository` interface and `TypeOrmWorkoutRepository`:
 
 ```bash
-pnpm test -- --testPathPattern=weight.vo
-pnpm test -- --testPathPattern=unit-converter
+pnpm test -- --testPathPatterns="workout-repository"
 ```
-
-Then implement the source files until tests go GREEN.

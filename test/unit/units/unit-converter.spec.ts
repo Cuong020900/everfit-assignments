@@ -1,4 +1,4 @@
-import { fromKg, toKg, UNIT_TO_KG } from '../../../src/shared/units/unit-converter';
+import { fromKg, toKg, UNIT_TO_KG } from '@src/shared/units/unit-converter';
 
 describe('UnitConverter', () => {
   describe('toKg()', () => {

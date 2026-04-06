@@ -1,4 +1,4 @@
-import { Weight } from '../../../src/modules/workout/domain/value-objects/weight.vo';
+import { Weight } from '@src/modules/workout/domain/value-objects/weight.vo';
 
 describe('Weight value object', () => {
   it('creates a Weight with value and unit', () => {

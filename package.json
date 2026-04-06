@@ -20,9 +20,13 @@
     "test:cov": "jest --coverage",
     "test:integration": "NODE_ENV=test jest --config ./test/jest-integration.json --runInBand",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "migration:create": "cd src/database/migrations && npx typeorm-ts-node-commonjs migration:create",
+    "migration:run": "pnpm typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+    "migration:revert": "pnpm typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/exercise-metadata.seed.ts",
+    "seed:dev": "NODE_ENV=development pnpm seed",
+    "seed:test": "NODE_ENV=test pnpm seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

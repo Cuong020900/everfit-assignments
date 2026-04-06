@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WorkoutModule } from '@src/modules/workout/workout.module';
 import { EEnvKey } from '@src/shared/constants/env-keys.enum';
 import { RequestIdMiddleware } from '@src/shared/middleware/request-id.middleware';
 import * as Joi from 'joi';
@@ -66,6 +67,8 @@ import { LoggerModule } from 'nestjs-pino';
         };
       },
     }),
+
+    WorkoutModule,
   ],
 })
 export class AppModule implements NestModule {

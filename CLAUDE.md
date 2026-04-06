@@ -23,12 +23,26 @@ Each time you change code, review the conventions below and update this file if 
 - **Named type aliases** instead of inline `Record<string, any>` — e.g. `type ConfigMap = Record<string, any>`
 - **`const`** over `let` wherever the binding is not reassigned
 - **No `var`**
+- **No relative imports** — always use `@src/` path alias. `import { Foo } from '@src/modules/...'` never `'../../...'`
 
 ### Comments
 - Only add comments for complex logic — do not comment obvious code
 - Inline suppression format: `// biome-ignore lint/rule/name: <one-line reason>`
 
-### NestJS patterns
+### Migrations
+- Use `queryRunner.createTable(new Table({...}))` for table structure — never raw SQL for DDL
+- Use `queryRunner.createIndex(tableName, new TableIndex({...}))` for plain indexes
+- **Exception:** `TableIndex` has no per-column `DESC` support. When a `DESC` sort direction is required, use `queryRunner.query('CREATE INDEX ... ON ... (col DESC)')` and add a comment: `// TableIndex does not support per-column DESC — raw SQL required for sort direction`
+- `down()` only needs `dropTable(name, true)` — dropping a table drops its indexes automatically
+- Never add FK constraints in migrations — referential integrity is managed at the application layer
+- Seed data lives in `src/database/seeds/` and runs via `pnpm seed` — never embed seed in migrations
+
+### Entities
+- All entity columns must use `!` non-null assertions (strict TS mode)
+- All entities must include `@CreateDateColumn created_at` and `@UpdateDateColumn updated_at`
+- No soft delete (`deleted_at`) until a delete endpoint is planned
+- `NUMERIC` / `DECIMAL` PostgreSQL columns must use a `numericTransformer` (`parseFloat` on read) — the `pg` driver returns them as strings
+- `DATE` columns are intentionally typed `string` — pg returns `'YYYY-MM-DD'` and converting to `Date` introduces timezone shifts
 - Static routes (`/pr`, `/progress`, `/insights`) must be declared **before** any `/:param` route in the controller
 - Domain errors are thrown as `throw new Error('ERROR_CODE')` — never throw HTTP exceptions from use-cases
 - Use-cases receive `IWorkoutRepository` via `WORKOUT_REPOSITORY` injection token, never `TypeOrmWorkoutRepository` directly
