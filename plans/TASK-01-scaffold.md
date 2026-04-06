@@ -42,15 +42,15 @@ Docker compose uses `workout`/`workout_db`/`workout_test_db` (not `everfit` from
 
 ## Completed Deliverables
 
-- [x] `config/config.yaml`
-- [x] `config/config.production.yaml`
-- [x] `config/config.test.yaml`
-- [x] `src/config/configuration.ts`
-- [x] `src/app.module.ts` (ConfigModule, TypeOrmModule, LoggerModule)
+- [x] `src/app.module.ts` (ConfigModule pure-env, TypeOrmModule, LoggerModule)
 - [x] `src/main.ts` (Helmet, CORS, ValidationPipe, GlobalExceptionFilter, Swagger)
-- [x] `src/common/constants/error-codes.ts`
-- [x] `src/common/filters/http-exception.filter.ts`
+- [x] `src/shared/constants/error-codes.ts` (moved from `src/common/`)
+- [x] `src/shared/filters/http-exception.filter.ts` (moved from `src/common/`)
 - [x] `src/database/data-source.ts`
+- ~~`config/config.yaml`~~ — removed (pure env approach)
+- ~~`config/config.production.yaml`~~ — removed
+- ~~`config/config.test.yaml`~~ — removed
+- ~~`src/config/configuration.ts`~~ — removed
 - [x] `src/modules/workout/workout.module.ts` (stub)
 - [x] `docker-compose.yml` (api + db + db-test)
 - [x] `Dockerfile` (multi-stage)

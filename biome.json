@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!dist/**", "!coverage/**", "!node_modules/**"]
+    "includes": ["**", "!dist", "!coverage", "!node_modules"]
   },
   "formatter": {
     "enabled": true,

@@ -11,11 +11,23 @@ function resolvePort(): number {
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST !== undefined && process.env.DB_HOST !== '' ? process.env.DB_HOST : 'localhost',
+  host:
+    process.env.DB_HOST !== undefined && process.env.DB_HOST !== ''
+      ? process.env.DB_HOST
+      : 'localhost',
   port: resolvePort(),
-  username: process.env.DB_USER !== undefined && process.env.DB_USER !== '' ? process.env.DB_USER : 'workout',
-  password: process.env.DB_PASSWORD !== undefined && process.env.DB_PASSWORD !== '' ? process.env.DB_PASSWORD : 'workout',
-  database: process.env.DB_NAME !== undefined && process.env.DB_NAME !== '' ? process.env.DB_NAME : 'workout_db',
+  username:
+    process.env.DB_USER !== undefined && process.env.DB_USER !== ''
+      ? process.env.DB_USER
+      : 'workout',
+  password:
+    process.env.DB_PASSWORD !== undefined && process.env.DB_PASSWORD !== ''
+      ? process.env.DB_PASSWORD
+      : 'workout',
+  database:
+    process.env.DB_NAME !== undefined && process.env.DB_NAME !== ''
+      ? process.env.DB_NAME
+      : 'workout_db',
   entities: [`${__dirname}/../modules/**/*.entity{.ts,.js}`],
   migrations: [`${__dirname}/migrations/*{.ts,.js}`],
   synchronize: false,

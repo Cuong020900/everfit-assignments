@@ -1,5 +1,5 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
-import { ERROR_MESSAGES, KNOWN_ERROR_CODES } from '@src/common/constants/error-codes';
+import { ERROR_MESSAGES, KNOWN_ERROR_CODES } from '@src/shared/constants/error-codes';
 import type { Response } from 'express';
 
 /** Shape NestJS / class-validator sends for HTTP exceptions */

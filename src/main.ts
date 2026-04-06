@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '@src/app.module';
-import { GlobalExceptionFilter } from '@src/common/filters/http-exception.filter';
+import { GlobalExceptionFilter } from '@src/shared/filters/http-exception.filter';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
