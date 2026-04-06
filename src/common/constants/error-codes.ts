@@ -1,0 +1,33 @@
+export const KNOWN_ERROR_CODES = new Set([
+  'EMPTY_ENTRIES',
+  'EMPTY_SETS',
+  'INVALID_REPS',
+  'INVALID_WEIGHT',
+  'INVALID_UNIT',
+  'INVALID_DATE',
+  'INVALID_DATE_RANGE',
+  'INVALID_EXERCISE_NAME',
+  'INVALID_USER_ID',
+  'LIMIT_EXCEEDED',
+  'INVALID_LIMIT',
+  'MISSING_EXERCISE_NAME',
+  'INVALID_GROUP_BY',
+  'INVALID_METRIC',
+]);
+
+export const ERROR_MESSAGES: Record<string, string> = {
+  EMPTY_ENTRIES: 'The entries array must contain at least one item',
+  EMPTY_SETS: 'Each entry must contain at least one set',
+  INVALID_REPS: 'Reps must be a positive integer',
+  INVALID_WEIGHT: 'Weight must be a positive number',
+  INVALID_UNIT: 'Unit must be "kg" or "lb"',
+  INVALID_DATE: 'Date must be a valid YYYY-MM-DD string',
+  INVALID_DATE_RANGE: '"from" must be before or equal to "to"',
+  INVALID_EXERCISE_NAME: 'Exercise name must not be empty',
+  INVALID_USER_ID: 'userId must be a valid UUID',
+  LIMIT_EXCEEDED: 'Limit must not exceed 100',
+  INVALID_LIMIT: 'Limit must be a positive integer',
+  MISSING_EXERCISE_NAME: 'exerciseName is required for this endpoint',
+  INVALID_GROUP_BY: 'groupBy must be "daily", "weekly", or "monthly"',
+  INVALID_METRIC: 'metric must be "maxWeight", "totalVolume", or "estimatedOneRM"',
+};

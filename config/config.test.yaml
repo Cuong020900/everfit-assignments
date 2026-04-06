@@ -1,0 +1,12 @@
+app:
+  port: 3001
+
+database:
+  host: localhost
+  port: 5433
+  name: workout_test_db
+  synchronize: false
+  logging: false
+
+logging:
+  level: silent

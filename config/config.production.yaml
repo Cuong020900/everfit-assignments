@@ -1,0 +1,10 @@
+app:
+  cors:
+    origins: []
+
+database:
+  synchronize: false
+  logging: false
+
+logging:
+  level: info
