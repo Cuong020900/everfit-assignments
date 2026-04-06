@@ -1,4 +1,22 @@
+import type { ApiResult } from '@src/shared/types/api-response.type';
+import { GroupBy } from '@src/shared/enums/group-by.enum';
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+
+export interface ProgressPoint {
+  period: string; // 'YYYY-MM-DD' | 'YYYY-Www' | 'YYYY-MM'
+  bestWeight: number;
+  volume: number;
+  unit: string;
+}
+
+export interface ProgressData {
+  series: ProgressPoint[];
+  groupBy: GroupBy;
+  note: string | null;
+}
+
+export interface GetProgressResult extends ApiResult<ProgressData> {}
 
 export class GetProgressDTO {
   @IsUUID()
@@ -17,10 +35,10 @@ export class GetProgressDTO {
   to?: string;
 
   @IsOptional()
-  @IsEnum(['daily', 'weekly', 'monthly'])
-  groupBy: 'daily' | 'weekly' | 'monthly' = 'daily';
+  @IsEnum(GroupBy)
+  groupBy: GroupBy = GroupBy.DAILY;
 
   @IsOptional()
-  @IsEnum(['kg', 'lb'])
-  unit: 'kg' | 'lb' = 'kg';
+  @IsEnum(WeightUnit)
+  unit: WeightUnit = WeightUnit.KG;
 }

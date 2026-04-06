@@ -1,4 +1,5 @@
 import type { PaginatedResult } from '@src/shared/types/api-response.type';
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
@@ -58,6 +59,6 @@ export class GetHistoryDTO {
   muscleGroup?: string;
 
   @IsOptional()
-  @IsEnum(['kg', 'lb'])
-  unit: 'kg' | 'lb' = 'kg';
+  @IsEnum(WeightUnit)
+  unit: WeightUnit = WeightUnit.KG;
 }

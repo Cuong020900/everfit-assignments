@@ -1,3 +1,4 @@
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -22,8 +23,8 @@ export class WorkoutSetDTO {
   @Min(0.001)
   weight!: number;
 
-  @IsEnum(['kg', 'lb'])
-  unit!: 'kg' | 'lb';
+  @IsEnum(WeightUnit)
+  unit!: WeightUnit;
 }
 
 export class WorkoutEntryDTO {

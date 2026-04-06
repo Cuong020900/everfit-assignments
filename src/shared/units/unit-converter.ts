@@ -1,8 +1,11 @@
-export const UNIT_TO_KG = Object.freeze({ kg: 1, lb: 0.453592 } as const);
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 
-type Unit = keyof typeof UNIT_TO_KG;
+export const UNIT_TO_KG: Record<WeightUnit, number> = {
+  [WeightUnit.KG]: 1,
+  [WeightUnit.LB]: 0.453592,
+};
 
-function assertUnit(unit: string): asserts unit is Unit {
+function assertUnit(unit: string): asserts unit is WeightUnit {
   if (!(unit in UNIT_TO_KG)) throw new Error('INVALID_UNIT');
 }
 
