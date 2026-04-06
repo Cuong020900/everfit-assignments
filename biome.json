@@ -1,6 +1,10 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "ignoreUnknown": false,
     "includes": ["**", "!dist", "!coverage", "!node_modules"]
@@ -18,6 +22,9 @@
     "expand": "auto"
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "always",
@@ -107,7 +114,19 @@
       "includes": ["test/**/*.ts", "**/*.spec.ts"],
       "linter": {
         "rules": {
-          "suspicious": { "noExplicitAny": "off" }
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/workout/repositories/*.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedFunctionParameters": "off"
+          }
         }
       }
     }

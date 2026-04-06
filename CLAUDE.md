@@ -44,9 +44,9 @@ Each time you change code, review the conventions below and update this file if 
 - `NUMERIC` / `DECIMAL` PostgreSQL columns must use a `numericTransformer` (`parseFloat` on read) — the `pg` driver returns them as strings
 - `DATE` columns are intentionally typed `string` — pg returns `'YYYY-MM-DD'` and converting to `Date` introduces timezone shifts
 - Static routes (`/pr`, `/progress`, `/insights`) must be declared **before** any `/:param` route in the controller
-- Domain errors are thrown as `throw new Error('ERROR_CODE')` — never throw HTTP exceptions from use-cases
-- Use-cases receive `IWorkoutRepository` via `WORKOUT_REPOSITORY` injection token, never `TypeOrmWorkoutRepository` directly
-- `weight_kg` is computed **at write time** in `LogWorkoutUseCase` — never convert units in query methods
+- Domain errors are thrown as `throw new Error('ERROR_CODE')` — never throw HTTP exceptions from services
+- Services receive `IWorkoutRepository` via `WORKOUT_REPOSITORY` injection token, never `TypeOrmWorkoutRepository` directly
+- `weight_kg` is computed **at write time** in `LogWorkoutService` — never convert units in query methods
 
 ## Commands
 
@@ -93,30 +93,33 @@ Unit tests use mocked repositories (`createMockRepository()` factory). Integrati
 
 ```
 src/
-├── app.module.ts               # Root module — wires ConfigModule, TypeOrmModule, LoggerModule
-├── main.ts                     # Bootstrap: Helmet, CORS, ValidationPipe, GlobalExceptionFilter, Swagger
+├── model/
+│   ├── entities/               # TypeORM entities: BaseEntity, WorkoutEntry, WorkoutSet, ExerciseMetadata
+│   └── database-common.ts      # TypeOrmModule.forFeature export
+├── modules/workout/
+│   ├── controllers/            # WorkoutController (HTTP layer only)
+│   ├── services/               # One class per service (LogWorkout, GetHistory, GetPR, GetProgress, GetInsights)
+│   ├── repositories/           # TypeOrmWorkoutRepository
+│   ├── interfaces/             # IWorkoutRepository, InsightPlugin interfaces
+│   ├── dto/                   # Request DTOs with class-validator decorators
+│   ├── plugins/               # InsightPlugin implementations (multi: true DI)
+│   └── workout.module.ts
 ├── shared/
-│   ├── constants/error-codes.ts  # KNOWN_ERROR_CODES set + ERROR_MESSAGES map
-│   ├── filters/http-exception.filter.ts  # GlobalExceptionFilter → { statusCode, error, message }
-│   └── utils/                  # date-period.util.ts, cursor.util.ts, unit-converter.ts
-├── database/
-│   ├── data-source.ts          # TypeORM DataSource for CLI migrations
-│   └── migrations/             # Generated migration files
-└── modules/
-    └── workout/
-        ├── workout.module.ts
-        ├── workout.controller.ts
-        ├── dto/                # Request DTOs with class-validator decorators
-        ├── entities/           # TypeORM entities: WorkoutEntry, WorkoutSet, ExerciseMetadata
-        ├── interfaces/         # IWorkoutRepository, InsightPlugin interfaces
-        ├── use-cases/          # One class per use-case (LogWorkout, GetHistory, GetPR, GetProgress, GetInsights)
-        └── plugins/            # InsightPlugin implementations (multi: true DI)
+│   ├── constants/              # error-codes.ts, env-keys.enum.ts
+│   ├── filters/               # http-exception.filter.ts
+│   ├── interceptors/           # transform-response.interceptor.ts
+│   ├── middleware/            # request-id.middleware.ts
+│   └── utils/                 # unit-converter.ts, date-period.util.ts, cursor.util.ts
+└── database/
+    ├── data-source.ts          # TypeORM DataSource for CLI migrations
+    └── migrations/             # Generated migration files
 
 test/
 ├── unit/
-│   ├── use-cases/              # Use-case specs with mocked IWorkoutRepository
+│   ├── use-cases/              # Service specs with mocked IWorkoutRepository
 │   ├── utils/                  # Utility function specs
-│   └── insights/               # InsightPlugin specs
+│   ├── insights/               # InsightPlugin specs
+│   └── repositories/           # Repository mock factory
 └── integration/                # HTTP-level specs with Supertest + real test DB
 ```
 
@@ -132,10 +135,10 @@ Every error response is `{ statusCode: number, error: string, message: string }`
 `IWorkoutRepository` is the abstraction injected into all use-cases via the `WORKOUT_REPOSITORY` symbol. The TypeORM implementation is registered as `{ provide: WORKOUT_REPOSITORY, useClass: TypeOrmWorkoutRepository }`. Unit tests inject a mock object instead.
 
 ### Insight Plugin System
-`InsightPlugin` implementations are registered as `{ provide: INSIGHT_PLUGINS, useClass: ..., multi: true }`. `GetInsightsUseCase` receives `InsightPlugin[]`. Adding a new insight = one new class + one line in `workout.module.ts` (OCP).
+`InsightPlugin` implementations are registered as `{ provide: INSIGHT_PLUGINS, useClass: ..., multi: true }`. `GetInsightsService` receives `InsightPlugin[]`. Adding a new insight = one new class + one line in `workout.module.ts` (OCP).
 
 ### Weight Storage
-`weight_kg` is computed and stored at write time (unit conversion happens once in `LogWorkoutUseCase`). Query-time conversion is never needed for aggregations.
+`weight_kg` is computed and stored at write time (unit conversion happens once in `LogWorkoutService`). Query-time conversion is never needed for aggregations.
 
 ### Cursor Pagination
 History uses base64url-encoded `{ date, id }` JSON cursor. Composite index on `(user_id, date DESC, id DESC)` makes this efficient.
@@ -171,7 +174,7 @@ Follow Red → Green → Refactor strictly:
 Tasks are in `plans/` with explicit `blocks`/`blockedBy` metadata. Always follow the dependency graph in `plans/README.md`. The critical path is:
 
 ```
-TASK-01 → TASK-02 → TASK-03 → TASK-04 → (05/06/07/08 in parallel) → TASK-09 → TASK-10 → TASK-11
+TASK-01 → TASK-02 → TASK-03 → TASK-04 → (05/06/07/08 in parallel) → TASK-09 → TASK-10
 ```
 
-Current status: TASK-01 ✅ complete. TASK-02 🔄 in progress (tests written RED, source files missing).
+Current status: TASK-01 ✅ complete. TASK-02 ⏳ next (entities + migrations + unit converter + weight value object).

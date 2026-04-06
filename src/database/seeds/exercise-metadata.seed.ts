@@ -1,4 +1,4 @@
-import { AppDataSource } from '@src/database/data-source';
+import { DataSource } from 'typeorm';
 
 const SEED_DATA = [
   { name: 'Bench Press', muscleGroup: 'push', aliases: ['bench'] },
@@ -16,14 +16,22 @@ const SEED_DATA = [
 ];
 
 async function seed(): Promise<void> {
-  await AppDataSource.initialize();
+  const dataSource = new DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT) || 5432,
+    username: process.env.DB_USER || 'workout',
+    password: process.env.DB_PASSWORD || 'workout',
+    database: process.env.DB_NAME || 'workout_db',
+    synchronize: false,
+  });
 
-  const runner = AppDataSource.createQueryRunner();
+  await dataSource.initialize();
+  const runner = dataSource.createQueryRunner();
   await runner.connect();
 
   try {
     console.log('Seeding exercise_metadata...');
-
     for (const row of SEED_DATA) {
       await runner.query(
         `INSERT INTO "exercise_metadata" ("name", "muscle_group", "aliases")
@@ -32,11 +40,10 @@ async function seed(): Promise<void> {
         [row.name, row.muscleGroup, row.aliases],
       );
     }
-
     console.log(`Seeded ${SEED_DATA.length} exercises.`);
   } finally {
     await runner.release();
-    await AppDataSource.destroy();
+    await dataSource.destroy();
   }
 }
 
