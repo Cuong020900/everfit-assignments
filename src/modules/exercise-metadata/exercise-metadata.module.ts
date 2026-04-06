@@ -1,4 +1,4 @@
-import { type ClassProvider, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExerciseMetadata } from '@src/model/entities/exercise-metadata.entity';
 import { WorkoutEntry } from '@src/model/entities/workout-entry.entity';
@@ -17,12 +17,22 @@ import { TypeOrmExerciseMetadataRepository } from '@src/modules/exercise-metadat
   imports: [TypeOrmModule.forFeature([ExerciseMetadata, WorkoutEntry, WorkoutSet])],
   controllers: [ExerciseMetadataController],
   providers: [
+    MostTrainedPlugin,
+    TrainingFrequencyPlugin,
+    MuscleGroupBalancePlugin,
+    GapsPlugin,
     ExerciseMetadataService,
     { provide: EXERCISE_METADATA_REPOSITORY, useClass: TypeOrmExerciseMetadataRepository },
-    { provide: INSIGHT_PLUGINS, useClass: MostTrainedPlugin, multi: true } as ClassProvider,
-    { provide: INSIGHT_PLUGINS, useClass: TrainingFrequencyPlugin, multi: true } as ClassProvider,
-    { provide: INSIGHT_PLUGINS, useClass: MuscleGroupBalancePlugin, multi: true } as ClassProvider,
-    { provide: INSIGHT_PLUGINS, useClass: GapsPlugin, multi: true } as ClassProvider,
+    {
+      provide: INSIGHT_PLUGINS,
+      useFactory: (
+        most: MostTrainedPlugin,
+        freq: TrainingFrequencyPlugin,
+        balance: MuscleGroupBalancePlugin,
+        gaps: GapsPlugin,
+      ) => [most, freq, balance, gaps],
+      inject: [MostTrainedPlugin, TrainingFrequencyPlugin, MuscleGroupBalancePlugin, GapsPlugin],
+    },
   ],
 })
 export class ExerciseMetadataModule {}

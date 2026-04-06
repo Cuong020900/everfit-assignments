@@ -61,6 +61,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return;
     }
 
+    console.error('[GlobalExceptionFilter] Unhandled exception:', exception);
     res.status(500).json({
       statusCode: 500,
       error: 'INTERNAL_ERROR',

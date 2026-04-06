@@ -1,6 +1,6 @@
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import type { PaginatedResult } from '@src/shared/types/api-response.type';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -35,7 +35,9 @@ export class GetHistoryDTO {
   @IsInt()
   @Min(1)
   @Max(100)
-  @Type(() => Number)
+  @Transform(({ value }) =>
+    value !== undefined && value !== null ? parseInt(String(value), 10) : 20,
+  )
   limit: number = 20;
 
   @IsOptional()
@@ -60,5 +62,6 @@ export class GetHistoryDTO {
 
   @IsOptional()
   @IsEnum(WeightUnit)
+  @Transform(({ value }) => value ?? WeightUnit.KG)
   unit: WeightUnit = WeightUnit.KG;
 }

@@ -1,12 +1,7 @@
 import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
-import type {
-  GetHistoryDTO,
-  GetHistoryResult,
-} from '@src/modules/workout-entry/dto/get-history.dto';
-import type {
-  LogWorkoutDTO,
-  LogWorkoutQueryDTO,
-} from '@src/modules/workout-entry/dto/log-workout.dto';
+import type { GetHistoryResult } from '@src/modules/workout-entry/dto/get-history.dto';
+import { GetHistoryDTO } from '@src/modules/workout-entry/dto/get-history.dto';
+import { LogWorkoutDTO, LogWorkoutQueryDTO } from '@src/modules/workout-entry/dto/log-workout.dto';
 import { WorkoutEntryService } from '@src/modules/workout-entry/workout-entry.service';
 
 @Controller('workouts')

@@ -43,7 +43,7 @@ export class TypeOrmWorkoutEntryRepository implements IWorkoutEntryRepository {
 
     const qb = this.entryRepo
       .createQueryBuilder('entry')
-      .leftJoinAndSelect('entry.sets', 'set')
+      .leftJoinAndSelect('entry.sets', 'ws')
       .where('entry.user_id = :userId', { userId })
       .orderBy('entry.date', 'DESC')
       .addOrderBy('entry.id', 'DESC')

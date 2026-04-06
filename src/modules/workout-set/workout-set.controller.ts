@@ -1,9 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import type { GetPRDTO, GetPRResult } from '@src/modules/workout-set/dto/get-pr.dto';
-import type {
-  GetProgressDTO,
-  GetProgressResult,
-} from '@src/modules/workout-set/dto/get-progress.dto';
+import type { GetPRResult } from '@src/modules/workout-set/dto/get-pr.dto';
+import { GetPRDTO } from '@src/modules/workout-set/dto/get-pr.dto';
+import type { GetProgressResult } from '@src/modules/workout-set/dto/get-progress.dto';
+import { GetProgressDTO } from '@src/modules/workout-set/dto/get-progress.dto';
 import { WorkoutSetService } from '@src/modules/workout-set/workout-set.service';
 
 @Controller('workouts')

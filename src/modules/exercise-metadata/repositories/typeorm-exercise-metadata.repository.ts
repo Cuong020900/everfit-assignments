@@ -10,8 +10,19 @@ import type {
 } from '@src/model/repositories/exercise-metadata/exercise-metadata.repository.types';
 import type { Repository } from 'typeorm';
 
+// pg returns DATE columns as local-midnight Date objects in getRawMany; convert to 'YYYY-MM-DD'
+function toDateStr(val: unknown): string {
+  if (val instanceof Date) {
+    const y = val.getFullYear();
+    const m = String(val.getMonth() + 1).padStart(2, '0');
+    const d = String(val.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return String(val);
+}
+
 interface RawRow {
-  date: string;
+  date: unknown;
   exercise_name: string;
   muscle_group: string | null;
   reps: string;
@@ -49,10 +60,11 @@ export class TypeOrmExerciseMetadataRepository implements IExerciseMetadataRepos
     // Group rows by (date, exerciseName) to reconstruct WorkoutEntryData[]
     const entryMap = new Map<string, WorkoutEntryData>();
     for (const row of rows) {
-      const key = `${row.date}||${row.exercise_name}`;
+      const dateStr = toDateStr(row.date);
+      const key = `${dateStr}||${row.exercise_name}`;
       if (!entryMap.has(key)) {
         entryMap.set(key, {
-          date: row.date,
+          date: dateStr,
           exerciseName: row.exercise_name,
           muscleGroup: row.muscle_group ?? null,
           sets: [],

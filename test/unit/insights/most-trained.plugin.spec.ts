@@ -37,9 +37,9 @@ describe('MostTrainedPlugin', () => {
       ]),
     );
 
-    const bench = result.find((r: any) => r.exerciseName === 'Bench Press');
+    const bench = result.find((r: any) => r.exerciseName === 'Bench Press')!;
     expect(bench.sessions).toBe(2);
-    const squat = result.find((r: any) => r.exerciseName === 'Squat');
+    const squat = result.find((r: any) => r.exerciseName === 'Squat')!;
     expect(squat.sessions).toBe(1);
   });
 

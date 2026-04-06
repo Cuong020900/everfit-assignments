@@ -12,12 +12,18 @@ export class TransformResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((value) => {
-        if (value === null || value === undefined) return value;
+        if (value === undefined) return value;
 
         const meta: ApiMeta = {
           timestamp: new Date().toISOString(),
           requestId: String(req.id ?? ''),
         };
+
+        // For null returns, produce a JSON null body (not empty body)
+        // by returning an object whose toJSON resolves to null.
+        if (value === null) {
+          return { toJSON: (): null => null };
+        }
 
         return { ...value, meta };
       }),

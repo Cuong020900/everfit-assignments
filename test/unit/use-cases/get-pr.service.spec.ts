@@ -1,5 +1,7 @@
 import type { PRSetResult } from '@src/model/repositories/workout-set/workout-set.repository.types';
 import { WorkoutSetService } from '@src/modules/workout-set/workout-set.service';
+import { CompareTo } from '@src/shared/enums/compare-to.enum';
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { createWorkoutSetRepoMock } from '../repositories/workout-repository.mock';
 
 const USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
@@ -24,7 +26,7 @@ describe('WorkoutSetService.getPRs()', () => {
   it('returns null PRs when no data', async () => {
     repo.findPRSets.mockResolvedValue([]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.KG });
 
     expect(result.data.maxWeight).toBeNull();
     expect(result.data.maxVolume).toBeNull();
@@ -38,7 +40,7 @@ describe('WorkoutSetService.getPRs()', () => {
       makeSet({ weightKg: 80, date: '2024-01-05' }),
     ]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.KG });
 
     expect(result.data.maxWeight?.weight).toBe(120);
     expect(result.data.maxWeight?.date).toBe('2024-01-15');
@@ -51,7 +53,7 @@ describe('WorkoutSetService.getPRs()', () => {
       makeSet({ reps: 3, weightKg: 120 }), // volume = 360
     ]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.KG });
 
     expect(result.data.maxVolume?.reps).toBe(10);
     expect(result.data.maxVolume?.weight).toBeCloseTo(80, 2);
@@ -63,7 +65,7 @@ describe('WorkoutSetService.getPRs()', () => {
       makeSet({ reps: 1, weightKg: 110, date: '2024-01-15' }), // 1RM ≈ 113.67
     ]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.KG });
 
     expect(result.data.best1RM?.estimated1RM).toBeCloseTo(116.67, 1);
     expect(result.data.best1RM?.date).toBe('2024-01-10');
@@ -72,7 +74,7 @@ describe('WorkoutSetService.getPRs()', () => {
   it('converts PR weights to lb when unit=lb', async () => {
     repo.findPRSets.mockResolvedValue([makeSet({ weightKg: 100 })]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'lb' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.LB });
 
     expect(result.data.maxWeight?.weight).toBeCloseTo(220.46, 1);
     expect(result.data.maxWeight?.unit).toBe('lb');
@@ -81,7 +83,7 @@ describe('WorkoutSetService.getPRs()', () => {
   it('each PR includes date', async () => {
     repo.findPRSets.mockResolvedValue([makeSet({ date: '2024-03-20' })]);
 
-    const result = await service.getPRs({ userId: USER_ID, unit: 'kg' });
+    const result = await service.getPRs({ userId: USER_ID, unit: WeightUnit.KG });
 
     expect(result.data.maxWeight?.date).toBe('2024-03-20');
     expect(result.data.maxVolume?.date).toBe('2024-03-20');
@@ -96,7 +98,7 @@ describe('WorkoutSetService.getPRs()', () => {
       exerciseName: 'Bench Press',
       from: '2024-01-01',
       to: '2024-01-31',
-      unit: 'kg',
+      unit: WeightUnit.KG,
     });
 
     expect(repo.findPRSets).toHaveBeenCalledWith({
@@ -116,8 +118,8 @@ describe('WorkoutSetService.getPRs()', () => {
       userId: USER_ID,
       from: '2024-02-01',
       to: '2024-02-29',
-      compareTo: 'previousPeriod',
-      unit: 'kg',
+      compareTo: CompareTo.PREVIOUS_PERIOD,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.previous?.maxWeight?.weight).toBe(100);
@@ -130,8 +132,8 @@ describe('WorkoutSetService.getPRs()', () => {
       userId: USER_ID,
       from: '2024-02-01',
       to: '2024-02-29',
-      compareTo: 'previousPeriod',
-      unit: 'kg',
+      compareTo: CompareTo.PREVIOUS_PERIOD,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.previous?.maxWeight).toBeNull();

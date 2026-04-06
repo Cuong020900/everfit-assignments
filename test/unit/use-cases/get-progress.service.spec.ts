@@ -1,5 +1,7 @@
 import type { ProgressSetResult } from '@src/model/repositories/workout-set/workout-set.repository.types';
 import { WorkoutSetService } from '@src/modules/workout-set/workout-set.service';
+import { GroupBy } from '@src/shared/enums/group-by.enum';
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { createWorkoutSetRepoMock } from '../repositories/workout-repository.mock';
 
 const USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
@@ -26,8 +28,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.series).toHaveLength(0);
@@ -44,8 +46,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.series).toHaveLength(2);
@@ -62,8 +64,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.series[0].volume).toBe(800);
@@ -79,8 +81,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'weekly',
-      unit: 'kg',
+      groupBy: GroupBy.WEEKLY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.series).toHaveLength(2);
@@ -96,8 +98,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'monthly',
-      unit: 'kg',
+      groupBy: GroupBy.MONTHLY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.series).toHaveLength(2);
@@ -111,8 +113,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'lb',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.LB,
     });
 
     expect(result.data.series[0].bestWeight).toBeCloseTo(220.46, 1);
@@ -125,8 +127,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.note).not.toBeNull();
@@ -141,8 +143,8 @@ describe('WorkoutSetService.getProgress()', () => {
     const result = await service.getProgress({
       userId: USER_ID,
       exerciseName: 'Bench Press',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(result.data.note).toBeNull();
@@ -156,8 +158,8 @@ describe('WorkoutSetService.getProgress()', () => {
       exerciseName: 'Squat',
       from: '2024-01-01',
       to: '2024-03-31',
-      groupBy: 'daily',
-      unit: 'kg',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
     });
 
     expect(repo.findProgressSeries).toHaveBeenCalledWith({

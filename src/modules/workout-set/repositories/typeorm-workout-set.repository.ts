@@ -11,6 +11,17 @@ import type {
 } from '@src/model/repositories/workout-set/workout-set.repository.types';
 import type { Repository } from 'typeorm';
 
+// pg returns DATE columns as local-midnight Date objects in getRawMany; convert to 'YYYY-MM-DD'
+function toDateStr(val: unknown): string {
+  if (val instanceof Date) {
+    const y = val.getFullYear();
+    const m = String(val.getMonth() + 1).padStart(2, '0');
+    const d = String(val.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return String(val);
+}
+
 @Injectable()
 export class TypeOrmWorkoutSetRepository implements IWorkoutSetRepository {
   constructor(
@@ -31,12 +42,12 @@ export class TypeOrmWorkoutSetRepository implements IWorkoutSetRepository {
     if (from) qb.andWhere('e.date >= :from', { from });
     if (to) qb.andWhere('e.date <= :to', { to });
 
-    const rows = await qb.getRawMany<{ reps: string; weightKg: string; date: string }>();
+    const rows = await qb.getRawMany<{ reps: string; weightKg: string; date: unknown }>();
 
     return rows.map((r) => ({
       reps: Number(r.reps),
       weightKg: parseFloat(r.weightKg),
-      date: r.date,
+      date: toDateStr(r.date),
     }));
   }
 
@@ -54,10 +65,10 @@ export class TypeOrmWorkoutSetRepository implements IWorkoutSetRepository {
     if (from) qb.andWhere('e.date >= :from', { from });
     if (to) qb.andWhere('e.date <= :to', { to });
 
-    const rows = await qb.getRawMany<{ date: string; reps: string; weightKg: string }>();
+    const rows = await qb.getRawMany<{ date: unknown; reps: string; weightKg: string }>();
 
     return rows.map((r) => ({
-      date: r.date,
+      date: toDateStr(r.date),
       reps: Number(r.reps),
       weightKg: parseFloat(r.weightKg),
     }));
