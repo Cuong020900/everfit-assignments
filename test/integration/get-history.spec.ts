@@ -284,4 +284,14 @@ describe('GET /workouts (history)', () => {
     expect(res.body.data).toEqual([]);
     expect(res.body.pagination.nextCursor).toBeNull();
   });
+
+  it('400 — malformed cursor returns 400 not 500', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_ID}&cursor=not-valid-base64-json`)
+      .expect(400);
+
+    expect(res.body).toMatchObject({ statusCode: 400 });
+    expect(res.body).toHaveProperty('error');
+    expect(res.body).toHaveProperty('message');
+  });
 });

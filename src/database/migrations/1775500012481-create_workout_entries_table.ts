@@ -48,9 +48,10 @@ export class CreateWorkoutEntries1743990000001 implements MigrationInterface {
     );
 
     // TableIndex does not support per-column DESC — raw SQL required for sort direction
+    // Composite (user_id, date DESC, id DESC) covers cursor pagination efficiently.
     await queryRunner.query(`
-      CREATE INDEX "idx_entries_user_date"
-        ON "workout_entries" ("user_id", "date" DESC)
+      CREATE INDEX "idx_entries_user_date_id"
+        ON "workout_entries" ("user_id", "date" DESC, "id" DESC)
     `);
     // Unique index on (user_id, exercise_name, date) enforces one entry per exercise per day
     // and also optimises PR/progress queries (supersedes a plain non-unique index).

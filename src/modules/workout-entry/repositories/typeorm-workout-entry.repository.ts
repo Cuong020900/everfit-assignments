@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WorkoutEntry } from '@src/model/entities/workout-entry.entity';
 import { WorkoutSet } from '@src/model/entities/workout-set.entity';
@@ -86,10 +86,16 @@ export class TypeOrmWorkoutEntryRepository implements IWorkoutEntryRepository {
     }
 
     if (cursor) {
-      const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString()) as {
-        date: string;
-        id: string;
-      };
+      let decoded: { date: string; id: string };
+      try {
+        decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString()) as {
+          date: string;
+          id: string;
+        };
+        if (!decoded.date || !decoded.id) throw new Error('missing fields');
+      } catch {
+        throw new BadRequestException('Invalid cursor');
+      }
       qb.andWhere('(entry.date < :cDate OR (entry.date = :cDate AND entry.id < :cId))', {
         cDate: decoded.date,
         cId: decoded.id,

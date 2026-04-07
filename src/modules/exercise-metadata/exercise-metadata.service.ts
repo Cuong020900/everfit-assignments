@@ -30,8 +30,8 @@ export class ExerciseMetadataService {
 
     const entries = await this.repo.findWorkoutData({
       userId: dto.userId,
-      from: dto.from,
-      to: dto.to,
+      from: resolvedFrom,
+      to: resolvedTo,
     });
 
     const period = { from: resolvedFrom, to: resolvedTo };

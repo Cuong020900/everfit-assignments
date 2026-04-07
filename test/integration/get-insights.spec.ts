@@ -149,9 +149,10 @@ describe('GET /workouts/insights', () => {
       { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] },
     ]);
 
-    // Query with to=2024-02-15 (31 days after last session)
+    // Query with explicit from/to so the window contains all 3 entries
+    // and to=2024-02-15 is 31 days after the last session
     const res = await request(app.getHttpServer())
-      .get(`/workouts/insights?userId=${USER_ID}&to=2024-02-15`)
+      .get(`/workouts/insights?userId=${USER_ID}&from=2024-01-01&to=2024-02-15`)
       .expect(200);
 
     const gaps = res.body.insights.find((i: any) => i.name === 'gaps');
@@ -188,5 +189,19 @@ describe('GET /workouts/insights', () => {
     );
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('200 — default period (no from/to) excludes data older than 30 days', async () => {
+    // Log one entry far in the past (outside 30-day window) and one recent entry
+    await logWorkout(app, '2020-01-01', [
+      { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] },
+    ]);
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts/insights?userId=${USER_ID}`)
+      .expect(200);
+
+    // The 2020 entry is outside the 30-day default window — insights should be empty
+    expect(res.body.insights).toEqual([]);
   });
 });

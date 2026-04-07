@@ -119,4 +119,17 @@ describe('ExerciseMetadataService.getInsights()', () => {
     expect(result.period.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(result.period.to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
+
+  it('calls repo with resolved dates (not undefined) when from/to omitted', async () => {
+    repo.findWorkoutData.mockResolvedValue([]);
+    (service as any).plugins = [];
+
+    await service.getInsights({ userId: USER_ID });
+
+    const call = repo.findWorkoutData.mock.calls[0][0];
+    expect(call.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(call.to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(call.from).not.toBeUndefined();
+    expect(call.to).not.toBeUndefined();
+  });
 });
