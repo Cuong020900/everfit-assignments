@@ -238,8 +238,8 @@ describe('GET /workouts (history)', () => {
       await logWorkout(
         app,
         USER_ID,
-        `2024-01-${String(i % 28 || 28).padStart(2, '0')}`,
-        'Bench Press',
+        `2024-01-${String((i % 28) + 1).padStart(2, '0')}`,
+        `Exercise ${i}`,
         [{ reps: 5, weight: 100, unit: 'kg' }],
       );
     }

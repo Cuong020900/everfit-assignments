@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import type { IWorkoutEntryRepository } from '@src/model/repositories/workout-entry/workout-entry.repository.interface';
 import { WORKOUT_ENTRY_REPOSITORY } from '@src/model/repositories/workout-entry/workout-entry.repository.interface';
 import type {
@@ -9,7 +9,11 @@ import type {
   LogWorkoutDTO,
   LogWorkoutResult,
 } from '@src/modules/workout-entry/dto/log-workout.dto';
+import { ERROR_MESSAGES } from '@src/shared/constants/error-codes';
 import { fromKg, toKg } from '@src/shared/units/unit-converter';
+
+/** PostgreSQL unique_violation error code */
+const PG_UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class WorkoutEntryService {
@@ -29,9 +33,15 @@ export class WorkoutEntryService {
       })),
     }));
 
-    const saved = await this.repo.saveEntries(userId, dto.date, entries);
-
-    return { date: dto.date, userId, entries: saved };
+    try {
+      const saved = await this.repo.saveEntries(userId, dto.date, entries);
+      return { date: dto.date, userId, entries: saved };
+    } catch (error: unknown) {
+      if (isDatabaseError(error) && error.code === PG_UNIQUE_VIOLATION) {
+        throw new ConflictException(ERROR_MESSAGES.DUPLICATE_ENTRY);
+      }
+      throw error;
+    }
   }
 
   async getHistory(dto: GetHistoryDTO): Promise<GetHistoryResult> {
@@ -61,4 +71,9 @@ export class WorkoutEntryService {
       },
     };
   }
+}
+
+/** Narrow unknown to a PG driver error with a `code` property. */
+function isDatabaseError(error: unknown): error is { code: string } {
+  return typeof error === 'object' && error !== null && 'code' in error;
 }

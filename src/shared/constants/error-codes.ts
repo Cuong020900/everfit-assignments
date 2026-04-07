@@ -12,6 +12,7 @@ export const KNOWN_ERROR_CODES = new Set([
   'INVALID_LIMIT',
   'MISSING_EXERCISE_NAME',
   'INVALID_GROUP_BY',
+  'DUPLICATE_ENTRY',
 ]);
 
 export const ERROR_MESSAGES: Record<string, string> = {
@@ -28,4 +29,6 @@ export const ERROR_MESSAGES: Record<string, string> = {
   INVALID_LIMIT: 'Limit must be a positive integer',
   MISSING_EXERCISE_NAME: 'exerciseName is required for this endpoint',
   INVALID_GROUP_BY: 'groupBy must be "daily", "weekly", or "monthly"',
+  DUPLICATE_ENTRY:
+    'A workout entry for this exercise on this date already exists',
 };

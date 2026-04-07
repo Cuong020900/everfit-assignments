@@ -52,9 +52,11 @@ export class CreateWorkoutEntries1743990000001 implements MigrationInterface {
       CREATE INDEX "idx_entries_user_date"
         ON "workout_entries" ("user_id", "date" DESC)
     `);
+    // Unique index on (user_id, exercise_name, date) enforces one entry per exercise per day
+    // and also optimises PR/progress queries (supersedes a plain non-unique index).
     await queryRunner.query(`
-      CREATE INDEX "idx_entries_user_exercise"
-        ON "workout_entries" ("user_id", "exercise_name", "date" DESC)
+      CREATE UNIQUE INDEX "uq_entries_user_exercise_date"
+        ON "workout_entries" ("user_id", "exercise_name", "date")
     `);
   }
 

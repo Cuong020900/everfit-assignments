@@ -213,4 +213,25 @@ describe('POST /workouts', () => {
     expect(historyA.body.data).toHaveLength(1);
     expect(historyB.body.data).toHaveLength(0);
   });
+
+  it('409 — duplicate entry (same userId, date, exerciseName) returns 409 Conflict', async () => {
+    const body = {
+      date: '2024-06-01',
+      entries: [{ exerciseName: 'Deadlift', sets: [{ reps: 3, weight: 180, unit: 'kg' }] }],
+    };
+
+    await request(app.getHttpServer())
+      .post(`/workouts?userId=${USER_ID}`)
+      .send(body)
+      .expect(201);
+
+    const res = await request(app.getHttpServer())
+      .post(`/workouts?userId=${USER_ID}`)
+      .send(body)
+      .expect(409);
+
+    expect(res.body).toMatchObject({ statusCode: 409 });
+    expect(res.body).toHaveProperty('error');
+    expect(res.body).toHaveProperty('message');
+  });
 });

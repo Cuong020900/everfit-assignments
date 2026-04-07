@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { WORKOUT_ENTRY_REPOSITORY } from '@src/model/repositories/workout-entry/workout-entry.repository.interface';
 import type { SavedWorkoutEntry } from '@src/model/repositories/workout-entry/workout-entry.repository.types';
 import { WorkoutEntryService } from '@src/modules/workout-entry/workout-entry.service';
@@ -118,5 +119,35 @@ describe('WorkoutEntryService.logWorkout()', () => {
         ],
       }),
     ).rejects.toThrow('INVALID_UNIT');
+  });
+
+  it('throws ConflictException when repository throws PG unique violation (23505)', async () => {
+    const pgError = Object.assign(new Error('duplicate key value violates unique constraint'), {
+      code: '23505',
+    });
+    repo.saveEntries.mockRejectedValue(pgError);
+
+    await expect(
+      service.logWorkout(USER_ID, {
+        date: '2024-01-15',
+        entries: [
+          { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG }] },
+        ],
+      }),
+    ).rejects.toThrow(ConflictException);
+  });
+
+  it('re-throws non-unique-violation errors unchanged', async () => {
+    const dbError = Object.assign(new Error('connection refused'), { code: '08006' });
+    repo.saveEntries.mockRejectedValue(dbError);
+
+    await expect(
+      service.logWorkout(USER_ID, {
+        date: '2024-01-15',
+        entries: [
+          { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG }] },
+        ],
+      }),
+    ).rejects.toThrow('connection refused');
   });
 });
