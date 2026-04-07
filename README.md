@@ -508,25 +508,43 @@ Unit tests use a `createMockRepository()` factory that returns a typed in-memory
 
 ## Performance & Stress Testing
 
-Two scripts are provided:
+Three scripts are provided:
 
+- `scripts/seed-fake-data.sh` for direct DB seeding (no API calls)
 - `scripts/benchmark-multi-user.sh` for large-dataset DB + API benchmark reports
 - `scripts/stress-api-concurrency.sh` for API concurrency stress reports (prefers `k6`, falls back to `curl`)
 
-### 1) Large dataset benchmark (multi-user)
+### 1) Fake data seeding (direct SQL, no API calls)
+
+This script inserts synthetic data directly into PostgreSQL for many users quickly.
+
+```bash
+# Seed into test DB, truncate old data first
+DB_PORT=5433 DB_NAME=workout_test_db TRUNCATE_FIRST=true \
+USERS_COUNT=5 ENTRIES_PER_USER=50000 SETS_PER_ENTRY=1 \
+./scripts/seed-fake-data.sh
+
+# Start data from 5 months ago
+START_MONTHS_AGO=5 ./scripts/seed-fake-data.sh
+```
+
+### 2) Large dataset benchmark (multi-user)
 
 This script resets the test DB schema, runs migrations, inserts synthetic data for multiple users, then benchmarks SQL and API read paths.
 
 ```bash
 # Example: 5 users x 50k entries each
 USERS_COUNT=5 ENTRIES_PER_USER=50000 ./scripts/benchmark-multi-user.sh
+
+# Start synthetic date range from 5 months ago
+START_MONTHS_AGO=5 USERS_COUNT=5 ENTRIES_PER_USER=50000 ./scripts/benchmark-multi-user.sh
 ```
 
 Output report:
 
 - `docs/benchmark-report-<timestamp>.md`
 
-### 2) API concurrency stress test (k6-first)
+### 3) API concurrency stress test (k6-first)
 
 This script captures machine/docker resource info, runs concurrent API calls across key endpoints, and writes latency/error metrics.
 
@@ -557,8 +575,23 @@ DB_USER=workout
 DB_PASSWORD=workout
 USERS_COUNT=5
 ENTRIES_PER_USER=50000
+SETS_PER_ENTRY=1
+EXERCISE_VARIANTS=200
+DATE_SPAN_DAYS=365
+START_DATE=2023-01-01
+START_MONTHS_AGO=5
 SAMPLE_ROUNDS=20
 API_CONCURRENCY=20
+
+# seed-fake-data.sh
+TRUNCATE_FIRST=true
+USERS_COUNT=5
+ENTRIES_PER_USER=50000
+SETS_PER_ENTRY=1
+EXERCISE_VARIANTS=200
+DATE_SPAN_DAYS=365
+START_DATE=2023-01-01
+START_MONTHS_AGO=5
 
 # stress-api-concurrency.sh
 USER_ID=<existing-user-uuid>

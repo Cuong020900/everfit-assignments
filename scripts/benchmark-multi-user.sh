@@ -14,6 +14,8 @@ ENTRIES_PER_USER="${ENTRIES_PER_USER:-50000}"
 SETS_PER_ENTRY="${SETS_PER_ENTRY:-1}"
 EXERCISE_VARIANTS="${EXERCISE_VARIANTS:-200}"
 DATE_SPAN_DAYS="${DATE_SPAN_DAYS:-365}"
+START_DATE="${START_DATE:-2023-01-01}"
+START_MONTHS_AGO="${START_MONTHS_AGO:-}"
 WARMUP_ROUNDS="${WARMUP_ROUNDS:-3}"
 SAMPLE_ROUNDS="${SAMPLE_ROUNDS:-20}"
 API_CONCURRENCY="${API_CONCURRENCY:-20}"
@@ -26,6 +28,18 @@ export PGPASSWORD="${DB_PASSWORD}"
 
 run_psql() {
   psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" "$@"
+}
+
+resolve_start_date() {
+  if [[ -n "${START_MONTHS_AGO}" ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      date -v-"${START_MONTHS_AGO}"m '+%Y-%m-%d'
+    else
+      date -d "${START_MONTHS_AGO} months ago" '+%Y-%m-%d'
+    fi
+  else
+    echo "${START_DATE}"
+  fi
 }
 
 require_cmd() {
@@ -127,14 +141,15 @@ DB_HOST="${DB_HOST}" DB_PORT="${DB_PORT}" DB_NAME="${DB_NAME}" DB_USER="${DB_USE
   pnpm migration:run >/dev/null
 
 echo "==> Seeding large multi-user dataset"
+RESOLVED_START_DATE="$(resolve_start_date)"
 run_psql -v ON_ERROR_STOP=1 -c "
 WITH users AS (
   SELECT
     (
       substr(md5('bench-user-' || u::text), 1, 8) || '-' ||
       substr(md5('bench-user-' || u::text), 9, 4) || '-' ||
-      substr(md5('bench-user-' || u::text), 13, 4) || '-' ||
-      substr(md5('bench-user-' || u::text), 17, 4) || '-' ||
+      '4' || substr(md5('bench-user-' || u::text), 14, 3) || '-' ||
+      '8' || substr(md5('bench-user-' || u::text), 18, 3) || '-' ||
       substr(md5('bench-user-' || u::text), 21, 12)
     )::uuid AS user_id
   FROM generate_series(1, ${USERS_COUNT}) AS u
@@ -144,7 +159,7 @@ entry_source AS (
     gen_random_uuid() AS id,
     u.user_id,
     (
-      DATE '2023-01-01' +
+      DATE '${RESOLVED_START_DATE}' +
       (((s - 1) % ${DATE_SPAN_DAYS})::int) +
       (((s - 1) / (${DATE_SPAN_DAYS} * ${EXERCISE_VARIANTS}))::int * (${DATE_SPAN_DAYS} + 1))
     )::date AS date,
@@ -186,8 +201,8 @@ BENCH_USER_ID="$(
     SELECT (
       substr(md5('bench-user-1'), 1, 8) || '-' ||
       substr(md5('bench-user-1'), 9, 4) || '-' ||
-      substr(md5('bench-user-1'), 13, 4) || '-' ||
-      substr(md5('bench-user-1'), 17, 4) || '-' ||
+      '4' || substr(md5('bench-user-1'), 14, 3) || '-' ||
+      '8' || substr(md5('bench-user-1'), 18, 3) || '-' ||
       substr(md5('bench-user-1'), 21, 12)
     )::uuid;
   " | tr -d '[:space:]'
@@ -299,6 +314,7 @@ cat > "${REPORT_FILE}" <<EOF
 - Total sets: ${SETS_TOTAL}
 - Exercise variants: ${EXERCISE_VARIANTS}
 - Date span (days): ${DATE_SPAN_DAYS}
+- Start date: ${RESOLVED_START_DATE}
 - Benchmark user: \`${BENCH_USER_ID}\`
 
 ## SQL Benchmarks (EXPLAIN ANALYZE, ms)
