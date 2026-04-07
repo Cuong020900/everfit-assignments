@@ -1,23 +1,21 @@
 import { GroupBy } from '@src/shared/enums/group-by.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
-import type { ApiResult } from '@src/shared/types/api-response.type';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export interface ProgressPoint {
-  period: string; // 'YYYY-MM-DD' | 'YYYY-Www' | 'YYYY-MM'
+  period: string;
   bestWeight: number;
   volume: number;
+}
+
+export interface GetProgressResult {
+  exerciseName: string;
+  groupBy: string;
   unit: string;
+  data: ProgressPoint[];
+  insufficientData: boolean;
 }
-
-export interface ProgressData {
-  series: ProgressPoint[];
-  groupBy: GroupBy;
-  note: string | null;
-}
-
-export interface GetProgressResult extends ApiResult<ProgressData> {}
 
 export class GetProgressDTO {
   @IsUUID()

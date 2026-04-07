@@ -6,6 +6,7 @@ import type { IWorkoutEntryRepository } from '@src/model/repositories/workout-en
 import type {
   HistoryQuery,
   HistoryResult,
+  SavedWorkoutEntry,
   WorkoutEntryInput,
 } from '@src/model/repositories/workout-entry/workout-entry.repository.types';
 import type { Repository } from 'typeorm';
@@ -17,7 +18,11 @@ export class TypeOrmWorkoutEntryRepository implements IWorkoutEntryRepository {
     private readonly entryRepo: Repository<WorkoutEntry>,
   ) {}
 
-  async saveEntries(userId: string, date: string, entries: WorkoutEntryInput[]): Promise<void> {
+  async saveEntries(
+    userId: string,
+    date: string,
+    entries: WorkoutEntryInput[],
+  ): Promise<SavedWorkoutEntry[]> {
     const entities = entries.map((entry) => {
       const workoutEntry = this.entryRepo.create({
         userId,
@@ -35,7 +40,20 @@ export class TypeOrmWorkoutEntryRepository implements IWorkoutEntryRepository {
       return workoutEntry;
     });
 
-    await this.entryRepo.save(entities);
+    const saved = await this.entryRepo.save(entities);
+
+    return saved.map((entry) => ({
+      id: entry.id,
+      exerciseName: entry.exerciseName,
+      sets: entry.sets.map((s) => ({
+        id: s.id,
+        reps: s.reps,
+        weight: s.weight,
+        unit: s.unit,
+        weightKg: s.weightKg,
+      })),
+      createdAt: entry.createdAt.toISOString(),
+    }));
   }
 
   async findHistory(query: HistoryQuery): Promise<HistoryResult> {

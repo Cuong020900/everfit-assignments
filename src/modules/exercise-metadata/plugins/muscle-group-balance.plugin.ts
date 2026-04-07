@@ -1,16 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import type { MuscleGroupBalanceData } from '@src/modules/exercise-metadata/dto/get-insights.dto';
 import type {
   InsightPlugin,
   WorkoutData,
 } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 
+interface MuscleGroupBalanceResult {
+  distribution: Record<string, number>;
+  warnings: string[];
+}
+
 @Injectable()
 export class MuscleGroupBalancePlugin implements InsightPlugin {
-  readonly key = 'muscleGroupBalance';
+  readonly name = 'muscleGroupBalance';
 
-  compute(data: WorkoutData): MuscleGroupBalanceData {
-    if (!Array.isArray(data.entries) || data.entries.length === 0) return {};
+  compute(data: WorkoutData): MuscleGroupBalanceResult {
+    if (!Array.isArray(data.entries) || data.entries.length === 0) {
+      return { distribution: {}, warnings: [] };
+    }
 
     const volumeByGroup = new Map<string, number>();
 
@@ -21,13 +27,20 @@ export class MuscleGroupBalancePlugin implements InsightPlugin {
     }
 
     const total = Array.from(volumeByGroup.values()).reduce((s, v) => s + v, 0);
-    if (total === 0) return {};
+    if (total === 0) return { distribution: {}, warnings: [] };
 
-    const result: MuscleGroupBalanceData = {};
+    const distribution: Record<string, number> = {};
     for (const [group, volume] of volumeByGroup.entries()) {
-      result[group] = Math.round((volume / total) * 1000) / 10;
+      distribution[group] = Math.round((volume / total) * 1000) / 10;
     }
 
-    return result;
+    const warnings: string[] = [];
+    for (const [group, pct] of Object.entries(distribution)) {
+      if (pct < 20) {
+        warnings.push(`${group} volume is lower than recommended`);
+      }
+    }
+
+    return { distribution, warnings };
   }
 }

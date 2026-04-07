@@ -210,9 +210,7 @@ describe('GET /workouts (history)', () => {
   });
 
   it('400 — invalid date format (to=not-a-date) returns 400', async () => {
-    const res = await request(app.getHttpServer()).get(
-      `/workouts?userId=${USER_ID}&to=not-a-date`,
-    );
+    const res = await request(app.getHttpServer()).get(`/workouts?userId=${USER_ID}&to=not-a-date`);
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
   });
@@ -237,9 +235,13 @@ describe('GET /workouts (history)', () => {
 
   it('200 — limit=100 (exact maximum boundary) returns 200', async () => {
     for (let i = 1; i <= 100; i++) {
-      await logWorkout(app, USER_ID, `2024-01-${String(i % 28 || 28).padStart(2, '0')}`, 'Bench Press', [
-        { reps: 5, weight: 100, unit: 'kg' },
-      ]);
+      await logWorkout(
+        app,
+        USER_ID,
+        `2024-01-${String(i % 28 || 28).padStart(2, '0')}`,
+        'Bench Press',
+        [{ reps: 5, weight: 100, unit: 'kg' }],
+      );
     }
 
     const res = await request(app.getHttpServer())

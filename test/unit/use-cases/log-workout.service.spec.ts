@@ -1,8 +1,16 @@
 import { WORKOUT_ENTRY_REPOSITORY } from '@src/model/repositories/workout-entry/workout-entry.repository.interface';
+import type { SavedWorkoutEntry } from '@src/model/repositories/workout-entry/workout-entry.repository.types';
 import { WorkoutEntryService } from '@src/modules/workout-entry/workout-entry.service';
 import { createWorkoutEntryRepoMock } from '../repositories/workout-repository.mock';
 
 const USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
+const makeSavedEntry = (exerciseName: string): SavedWorkoutEntry => ({
+  id: 'entry-uuid-1',
+  exerciseName,
+  sets: [{ id: 'set-uuid-1', reps: 5, weight: 100, unit: 'kg', weightKg: 100 }],
+  createdAt: '2024-01-15T00:00:00.000Z',
+});
 
 describe('WorkoutEntryService.logWorkout()', () => {
   let service: WorkoutEntryService;
@@ -17,7 +25,7 @@ describe('WorkoutEntryService.logWorkout()', () => {
   });
 
   it('calls saveEntries with weightKg computed from kg input', async () => {
-    repo.saveEntries.mockResolvedValue(undefined);
+    repo.saveEntries.mockResolvedValue([makeSavedEntry('Bench Press')]);
 
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
@@ -33,7 +41,7 @@ describe('WorkoutEntryService.logWorkout()', () => {
   });
 
   it('converts lb to kg at write time', async () => {
-    repo.saveEntries.mockResolvedValue(undefined);
+    repo.saveEntries.mockResolvedValue([makeSavedEntry('Squat')]);
 
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
@@ -48,7 +56,7 @@ describe('WorkoutEntryService.logWorkout()', () => {
   });
 
   it('handles bulk: multiple exercises in one request', async () => {
-    repo.saveEntries.mockResolvedValue(undefined);
+    repo.saveEntries.mockResolvedValue([makeSavedEntry('Bench Press'), makeSavedEntry('Squat')]);
 
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
@@ -65,7 +73,7 @@ describe('WorkoutEntryService.logWorkout()', () => {
   });
 
   it('passes userId and date through to repository', async () => {
-    repo.saveEntries.mockResolvedValue(undefined);
+    repo.saveEntries.mockResolvedValue([makeSavedEntry('Deadlift')]);
 
     await service.logWorkout(USER_ID, {
       date: '2024-03-20',
@@ -73,6 +81,20 @@ describe('WorkoutEntryService.logWorkout()', () => {
     });
 
     expect(repo.saveEntries).toHaveBeenCalledWith(USER_ID, '2024-03-20', expect.any(Array));
+  });
+
+  it('returns LogWorkoutResult with date, userId, and entries', async () => {
+    const saved = [makeSavedEntry('Bench Press')];
+    repo.saveEntries.mockResolvedValue(saved);
+
+    const result = await service.logWorkout(USER_ID, {
+      date: '2024-01-15',
+      entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] }],
+    });
+
+    expect(result.date).toBe('2024-01-15');
+    expect(result.userId).toBe(USER_ID);
+    expect(result.entries).toEqual(saved);
   });
 
   it('throws INVALID_UNIT for unsupported unit', async () => {

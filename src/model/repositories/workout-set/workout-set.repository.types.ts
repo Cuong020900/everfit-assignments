@@ -2,6 +2,7 @@ export interface PRSetResult {
   reps: number;
   weightKg: number;
   date: string;
+  exerciseName: string;
 }
 
 export interface PRQuery {

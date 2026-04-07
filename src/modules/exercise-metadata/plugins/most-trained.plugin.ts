@@ -1,15 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import type { MostTrainedEntry } from '@src/modules/exercise-metadata/dto/get-insights.dto';
 import type {
   InsightPlugin,
   WorkoutData,
 } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 
+interface MostTrainedByFrequency {
+  exercise: string;
+  sessionCount: number;
+}
+
+interface MostTrainedByVolume {
+  exercise: string;
+  totalVolumeKg: number;
+}
+
+interface MostTrainedResult {
+  byFrequency: MostTrainedByFrequency[];
+  byVolume: MostTrainedByVolume[];
+}
+
 @Injectable()
 export class MostTrainedPlugin implements InsightPlugin {
-  readonly key = 'mostTrained';
+  readonly name = 'mostTrained';
 
-  compute(data: WorkoutData): MostTrainedEntry[] {
+  compute(data: WorkoutData): MostTrainedResult {
     const map = new Map<string, { sessions: Set<string>; volume: number }>();
 
     for (const entry of data.entries) {
@@ -19,12 +33,14 @@ export class MostTrainedPlugin implements InsightPlugin {
       map.set(entry.exerciseName, acc);
     }
 
-    return Array.from(map.entries())
-      .map(([exerciseName, acc]) => ({
-        exerciseName,
-        sessions: acc.sessions.size,
-        volume: acc.volume,
-      }))
-      .sort((a, b) => b.sessions - a.sessions);
+    const byFrequency: MostTrainedByFrequency[] = Array.from(map.entries())
+      .map(([exercise, acc]) => ({ exercise, sessionCount: acc.sessions.size }))
+      .sort((a, b) => b.sessionCount - a.sessionCount);
+
+    const byVolume: MostTrainedByVolume[] = Array.from(map.entries())
+      .map(([exercise, acc]) => ({ exercise, totalVolumeKg: acc.volume }))
+      .sort((a, b) => b.totalVolumeKg - a.totalVolumeKg);
+
+    return { byFrequency, byVolume };
   }
 }

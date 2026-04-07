@@ -9,6 +9,11 @@ export interface PaginationMeta {
   limit: number;
 }
 
+/** Controller return type — interceptor will add `meta` field. */
+export interface ApiResponse<T> {
+  data: T;
+}
+
 /** Extend for single-resource service results. */
 export interface ApiResult<T> {
   data: T;

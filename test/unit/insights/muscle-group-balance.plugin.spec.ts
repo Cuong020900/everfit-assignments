@@ -9,12 +9,12 @@ const makeData = (entries: WorkoutData['entries']): WorkoutData => ({
 describe('MuscleGroupBalancePlugin', () => {
   const plugin = new MuscleGroupBalancePlugin();
 
-  it('returns empty object for no data', () => {
-    expect(plugin.compute(makeData({} as any))).toEqual({});
-    expect(plugin.compute(makeData([]))).toEqual({});
+  it('returns empty distribution and no warnings for no data', () => {
+    expect(plugin.compute(makeData({} as any))).toEqual({ distribution: {}, warnings: [] });
+    expect(plugin.compute(makeData([]))).toEqual({ distribution: {}, warnings: [] });
   });
 
-  it('groups volume by muscle group as percentages', () => {
+  it('groups volume by muscle group as percentages in distribution', () => {
     const result = plugin.compute(
       makeData([
         {
@@ -32,8 +32,8 @@ describe('MuscleGroupBalancePlugin', () => {
       ]),
     );
 
-    expect(result.chest).toBeCloseTo(50, 1);
-    expect(result.legs).toBeCloseTo(50, 1);
+    expect(result.distribution.chest).toBeCloseTo(50, 1);
+    expect(result.distribution.legs).toBeCloseTo(50, 1);
   });
 
   it('puts null muscleGroup exercises into "unknown" bucket', () => {
@@ -48,10 +48,10 @@ describe('MuscleGroupBalancePlugin', () => {
       ]),
     );
 
-    expect(result.unknown).toBe(100);
+    expect(result.distribution.unknown).toBe(100);
   });
 
-  it('returns empty object when all sets have zero volume', () => {
+  it('returns empty distribution when all sets have zero volume', () => {
     const result = plugin.compute(
       makeData([
         {
@@ -68,10 +68,11 @@ describe('MuscleGroupBalancePlugin', () => {
         },
       ]),
     );
-    expect(result).toEqual({});
+    expect(result.distribution).toEqual({});
+    expect(result.warnings).toEqual([]);
   });
 
-  it('percentages sum to 100', () => {
+  it('percentages in distribution sum to 100', () => {
     const result = plugin.compute(
       makeData([
         {
@@ -95,7 +96,55 @@ describe('MuscleGroupBalancePlugin', () => {
       ]),
     );
 
-    const total = Object.values(result as Record<string, number>).reduce((s, v) => s + v, 0);
+    const total = Object.values(result.distribution).reduce((s, v) => s + v, 0);
     expect(total).toBeCloseTo(100, 1);
+  });
+
+  it('adds warning when a muscle group is below 20% of total', () => {
+    // chest 10%, back 90% → chest gets warning
+    const result = plugin.compute(
+      makeData([
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 1, weightKg: 10 }], // 10
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Row',
+          muscleGroup: 'back',
+          sets: [{ reps: 1, weightKg: 90 }], // 90
+        },
+      ]),
+    );
+
+    expect(result.warnings).toContain('chest volume is lower than recommended');
+    expect(result.warnings).not.toContain('back volume is lower than recommended');
+  });
+
+  it('no warnings when all groups are at or above 20%', () => {
+    const result = plugin.compute(
+      makeData([
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 10, weightKg: 50 }], // 500
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Row',
+          muscleGroup: 'back',
+          sets: [{ reps: 10, weightKg: 50 }], // 500
+        },
+      ]),
+    );
+
+    expect(result.warnings).toHaveLength(0);
+  });
+
+  it('has the correct plugin name', () => {
+    expect(plugin.name).toBe('muscleGroupBalance');
   });
 });

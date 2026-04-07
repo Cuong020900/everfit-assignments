@@ -22,7 +22,7 @@ describe('WorkoutSetService.getProgress()', () => {
     (service as any).repo = repo;
   });
 
-  it('returns empty series when no data', async () => {
+  it('returns flat result with exerciseName, groupBy, unit, data, insufficientData', async () => {
     repo.findProgressSeries.mockResolvedValue([]);
 
     const result = await service.getProgress({
@@ -32,8 +32,41 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.KG,
     });
 
-    expect(result.data.series).toHaveLength(0);
-    expect(result.data.note).toBeNull();
+    expect(result.exerciseName).toBe('Bench Press');
+    expect(result.groupBy).toBe('daily');
+    expect(result.unit).toBe('kg');
+    expect(result.data).toEqual([]);
+    expect(result.insufficientData).toBe(true);
+  });
+
+  it('insufficientData is true when fewer than 2 data points', async () => {
+    repo.findProgressSeries.mockResolvedValue([makeSet('2024-01-15', 5, 100)]);
+
+    const result = await service.getProgress({
+      userId: USER_ID,
+      exerciseName: 'Bench Press',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
+    });
+
+    expect(result.data).toHaveLength(1);
+    expect(result.insufficientData).toBe(true);
+  });
+
+  it('insufficientData is false when 2 or more data points', async () => {
+    repo.findProgressSeries.mockResolvedValue([
+      makeSet('2024-01-15', 5, 100),
+      makeSet('2024-01-16', 5, 105),
+    ]);
+
+    const result = await service.getProgress({
+      userId: USER_ID,
+      exerciseName: 'Bench Press',
+      groupBy: GroupBy.DAILY,
+      unit: WeightUnit.KG,
+    });
+
+    expect(result.insufficientData).toBe(false);
   });
 
   it('returns best weight per day (daily groupBy)', async () => {
@@ -50,9 +83,9 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.KG,
     });
 
-    expect(result.data.series).toHaveLength(2);
-    expect(result.data.series[0]).toMatchObject({ period: '2024-01-15', bestWeight: 120 });
-    expect(result.data.series[1]).toMatchObject({ period: '2024-01-16', bestWeight: 110 });
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0]).toMatchObject({ period: '2024-01-15', bestWeight: 120 });
+    expect(result.data[1]).toMatchObject({ period: '2024-01-16', bestWeight: 110 });
   });
 
   it('includes volume per day (sum of reps × weightKg)', async () => {
@@ -68,7 +101,7 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.KG,
     });
 
-    expect(result.data.series[0].volume).toBe(800);
+    expect(result.data[0].volume).toBe(800);
   });
 
   it('groups into weeks (weekly groupBy)', async () => {
@@ -85,8 +118,8 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.KG,
     });
 
-    expect(result.data.series).toHaveLength(2);
-    expect(result.data.series[0].period).toMatch(/2024-W/);
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0].period).toMatch(/2024-W/);
   });
 
   it('groups into months (monthly groupBy)', async () => {
@@ -102,9 +135,9 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.KG,
     });
 
-    expect(result.data.series).toHaveLength(2);
-    expect(result.data.series[0].period).toBe('2024-01');
-    expect(result.data.series[1].period).toBe('2024-02');
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0].period).toBe('2024-01');
+    expect(result.data[1].period).toBe('2024-02');
   });
 
   it('converts weights to requested unit', async () => {
@@ -117,37 +150,8 @@ describe('WorkoutSetService.getProgress()', () => {
       unit: WeightUnit.LB,
     });
 
-    expect(result.data.series[0].bestWeight).toBeCloseTo(220.46, 1);
-    expect(result.data.series[0].unit).toBe('lb');
-  });
-
-  it('sets note when only 1 data point', async () => {
-    repo.findProgressSeries.mockResolvedValue([makeSet('2024-01-15', 5, 100)]);
-
-    const result = await service.getProgress({
-      userId: USER_ID,
-      exerciseName: 'Bench Press',
-      groupBy: GroupBy.DAILY,
-      unit: WeightUnit.KG,
-    });
-
-    expect(result.data.note).not.toBeNull();
-  });
-
-  it('note is null when multiple data points', async () => {
-    repo.findProgressSeries.mockResolvedValue([
-      makeSet('2024-01-15', 5, 100),
-      makeSet('2024-01-16', 5, 105),
-    ]);
-
-    const result = await service.getProgress({
-      userId: USER_ID,
-      exerciseName: 'Bench Press',
-      groupBy: GroupBy.DAILY,
-      unit: WeightUnit.KG,
-    });
-
-    expect(result.data.note).toBeNull();
+    expect(result.data[0].bestWeight).toBeCloseTo(220.46, 1);
+    expect(result.unit).toBe('lb');
   });
 
   it('passes filters to repository', async () => {
@@ -168,5 +172,17 @@ describe('WorkoutSetService.getProgress()', () => {
       from: '2024-01-01',
       to: '2024-03-31',
     });
+  });
+
+  it('defaults groupBy to "week" and unit to "kg" when omitted', async () => {
+    repo.findProgressSeries.mockResolvedValue([]);
+
+    const result = await service.getProgress({
+      userId: USER_ID,
+      exerciseName: 'Bench Press',
+    } as any);
+
+    expect(result.groupBy).toBe('week');
+    expect(result.unit).toBe('kg');
   });
 });

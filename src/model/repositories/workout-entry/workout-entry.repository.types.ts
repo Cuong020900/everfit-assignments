@@ -37,3 +37,18 @@ export interface HistoryResult {
   entries: HistoryEntryResult[];
   nextCursor: string | null;
 }
+
+export interface SavedSetData {
+  id: string;
+  reps: number;
+  weight: number;
+  unit: string;
+  weightKg: number;
+}
+
+export interface SavedWorkoutEntry {
+  id: string;
+  exerciseName: string;
+  sets: SavedSetData[];
+  createdAt: string; // ISO 8601 UTC
+}

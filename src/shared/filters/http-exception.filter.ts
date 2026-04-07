@@ -1,4 +1,10 @@
-import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Logger } from '@nestjs/common';
+import {
+  type ArgumentsHost,
+  Catch,
+  type ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 import { ERROR_MESSAGES, KNOWN_ERROR_CODES } from '@src/shared/constants/error-codes';
 import type { Response } from 'express';
 
@@ -63,7 +69,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
+    this.logger.error(
+      'Unhandled exception',
+      exception instanceof Error ? exception.stack : String(exception),
+    );
     res.status(500).json({
       statusCode: 500,
       error: 'INTERNAL_ERROR',

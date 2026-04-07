@@ -34,7 +34,12 @@ export class TypeOrmWorkoutSetRepository implements IWorkoutSetRepository {
 
     const qb = this.setRepo
       .createQueryBuilder('s')
-      .select(['s.reps AS reps', 's.weight_kg AS "weightKg"', 'e.date AS date'])
+      .select([
+        's.reps AS reps',
+        's.weight_kg AS "weightKg"',
+        'e.date AS date',
+        'e.exercise_name AS "exerciseName"',
+      ])
       .innerJoin(WorkoutEntry, 'e', 'e.id = s.entry_id')
       .where('e.user_id = :userId', { userId });
 
@@ -42,12 +47,18 @@ export class TypeOrmWorkoutSetRepository implements IWorkoutSetRepository {
     if (from) qb.andWhere('e.date >= :from', { from });
     if (to) qb.andWhere('e.date <= :to', { to });
 
-    const rows = await qb.getRawMany<{ reps: string; weightKg: string; date: unknown }>();
+    const rows = await qb.getRawMany<{
+      reps: string;
+      weightKg: string;
+      date: unknown;
+      exerciseName: string;
+    }>();
 
     return rows.map((r) => ({
       reps: Number(r.reps),
       weightKg: parseFloat(r.weightKg),
       date: toDateStr(r.date),
+      exerciseName: r.exerciseName,
     }));
   }
 

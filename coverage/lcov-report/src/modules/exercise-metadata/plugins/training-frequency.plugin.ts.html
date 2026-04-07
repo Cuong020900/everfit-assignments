@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>17/17</span>
+                <span class='fraction'>18/18</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/13</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -91,8 +91,13 @@
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
 <a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -100,42 +105,54 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Injectable } from '@nestjs/common';
-import type { TrainingFrequencyData } from '@src/modules/exercise-metadata/dto/get-insights.dto';
 import type {
   InsightPlugin,
   WorkoutData,
 } from '@src/modules/exercise-metadata/plugins/insight-plugin.interface';
 import dayjs from 'dayjs';
 &nbsp;
+interface TrainingFrequencyResult {
+  sessionsPerWeek: number;
+  totalSessions: number;
+  weeksAnalyzed: number;
+}
+&nbsp;
 @Injectable()
 export class TrainingFrequencyPlugin implements InsightPlugin {
-  readonly key = 'trainingFrequency';
+  readonly name = 'trainingFrequency';
 &nbsp;
-  compute(data: WorkoutData): TrainingFrequencyData {
+  compute(data: WorkoutData): TrainingFrequencyResult {
     const uniqueDates = new Set(data.entries.map((e) =&gt; e.date));
     const totalSessions = uniqueDates.size;
 &nbsp;
-    if (totalSessions === 0) return { sessionsPerWeek: 0, totalSessions: 0 };
+    if (totalSessions === 0) return { sessionsPerWeek: 0, totalSessions: 0, weeksAnalyzed: 0 };
 &nbsp;
     const sortedDates = Array.from(uniqueDates).sort();
     const from = data.from ?? sortedDates[0];
@@ -143,8 +160,9 @@ export class TrainingFrequencyPlugin implements InsightPlugin {
 &nbsp;
     const weeks = Math.max((dayjs(to).diff(dayjs(from), 'day') + 1) / 7, 1);
     const sessionsPerWeek = Math.round((totalSessions / weeks) * 10) / 10;
+    const weeksAnalyzed = Math.round(weeks * 10) / 10;
 &nbsp;
-    return { sessionsPerWeek, totalSessions };
+    return { sessionsPerWeek, totalSessions, weeksAnalyzed };
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -154,7 +172,7 @@ export class TrainingFrequencyPlugin implements InsightPlugin {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-07T04:10:39.393Z
+                at 2026-04-07T08:04:32.340Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

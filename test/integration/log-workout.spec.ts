@@ -32,13 +32,25 @@ describe('POST /workouts', () => {
     await app.close();
   });
 
-  it('201 — saves entries and returns 201 with empty body', async () => {
+  it('201 — saves entries and returns 201 with LogWorkoutResult body', async () => {
     const res = await request(app.getHttpServer())
       .post(`/workouts?userId=${USER_ID}`)
       .send(validBody);
 
     expect(res.status).toBe(201);
-    expect(res.body).toBeNull();
+    expect(res.body.data).toBeDefined();
+    expect(res.body.data.date).toBe('2024-01-15');
+    expect(res.body.data.userId).toBe(USER_ID);
+    expect(res.body.data.entries).toHaveLength(1);
+    expect(res.body.data.entries[0].exerciseName).toBe('Bench Press');
+    expect(res.body.data.entries[0].id).toBeDefined();
+    expect(res.body.data.entries[0].createdAt).toBeDefined();
+    expect(res.body.data.entries[0].sets).toHaveLength(1);
+    expect(res.body.data.entries[0].sets[0].id).toBeDefined();
+    expect(res.body.data.entries[0].sets[0].reps).toBe(5);
+    expect(res.body.data.entries[0].sets[0].weight).toBe(100);
+    expect(res.body.data.entries[0].sets[0].unit).toBe('kg');
+    expect(res.body.data.entries[0].sets[0].weightKg).toBe(100);
   });
 
   it('201 — bulk: saves multiple exercises in one request', async () => {
@@ -53,6 +65,7 @@ describe('POST /workouts', () => {
       });
 
     expect(res.status).toBe(201);
+    expect(res.body.data.entries).toHaveLength(2);
   });
 
   it('201 — stores weight_kg computed from lb correctly', async () => {
@@ -190,8 +203,12 @@ describe('POST /workouts', () => {
 
     await request(app.getHttpServer()).post(`/workouts?userId=${USER_A}`).send(bodyA).expect(201);
 
-    const historyA = await request(app.getHttpServer()).get(`/workouts?userId=${USER_A}`).expect(200);
-    const historyB = await request(app.getHttpServer()).get(`/workouts?userId=${USER_B}`).expect(200);
+    const historyA = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_A}`)
+      .expect(200);
+    const historyB = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_B}`)
+      .expect(200);
 
     expect(historyA.body.data).toHaveLength(1);
     expect(historyB.body.data).toHaveLength(0);

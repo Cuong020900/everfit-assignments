@@ -54,3 +54,16 @@ export class LogWorkoutQueryDTO {
   @IsUUID()
   userId!: string;
 }
+
+export interface LogWorkoutEntryDisplay {
+  id: string;
+  exerciseName: string;
+  sets: Array<{ id: string; reps: number; weight: number; unit: string; weightKg: number }>;
+  createdAt: string;
+}
+
+export interface LogWorkoutResult {
+  date: string;
+  userId: string;
+  entries: LogWorkoutEntryDisplay[];
+}

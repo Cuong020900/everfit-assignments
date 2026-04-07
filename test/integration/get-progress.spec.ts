@@ -35,13 +35,14 @@ describe('GET /workouts/progress', () => {
     await app.close();
   });
 
-  it('200 — empty range returns { series: [], note: null }', async () => {
+  it('200 — empty range returns flat result with empty data and insufficientData=true', async () => {
     const res = await request(app.getHttpServer())
       .get(`/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}`)
       .expect(200);
 
-    expect(res.body.data.series).toEqual([]);
-    expect(res.body.data.note).toBeNull();
+    expect(res.body.exerciseName).toBe(EXERCISE);
+    expect(res.body.data).toEqual([]);
+    expect(res.body.insufficientData).toBe(true);
   });
 
   it('200 — daily groupBy: one point per day', async () => {
@@ -54,10 +55,10 @@ describe('GET /workouts/progress', () => {
       )
       .expect(200);
 
-    expect(res.body.data.series).toHaveLength(2);
-    expect(res.body.data.series[0].period).toBe('2024-01-15');
-    expect(res.body.data.series[0].bestWeight).toBe(100);
-    expect(res.body.data.groupBy).toBe('daily');
+    expect(res.body.data).toHaveLength(2);
+    expect(res.body.data[0].period).toBe('2024-01-15');
+    expect(res.body.data[0].bestWeight).toBe(100);
+    expect(res.body.groupBy).toBe('daily');
   });
 
   it('200 — volume trend included per period', async () => {
@@ -67,7 +68,7 @@ describe('GET /workouts/progress', () => {
       .get(`/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}`)
       .expect(200);
 
-    expect(res.body.data.series[0].volume).toBe(500);
+    expect(res.body.data[0].volume).toBe(500);
   });
 
   it('200 — weekly groupBy: aggregates days into weeks', async () => {
@@ -81,9 +82,9 @@ describe('GET /workouts/progress', () => {
       )
       .expect(200);
 
-    expect(res.body.data.series).toHaveLength(2);
-    expect(res.body.data.groupBy).toBe('weekly');
-    expect(res.body.data.series[0].period).toMatch(/^\d{4}-W\d{2}$/);
+    expect(res.body.data).toHaveLength(2);
+    expect(res.body.groupBy).toBe('weekly');
+    expect(res.body.data[0].period).toMatch(/^\d{4}-W\d{2}$/);
   });
 
   it('200 — monthly groupBy: aggregates days into months', async () => {
@@ -96,9 +97,9 @@ describe('GET /workouts/progress', () => {
       )
       .expect(200);
 
-    expect(res.body.data.series).toHaveLength(2);
-    expect(res.body.data.series[0].period).toBe('2024-01');
-    expect(res.body.data.series[1].period).toBe('2024-02');
+    expect(res.body.data).toHaveLength(2);
+    expect(res.body.data[0].period).toBe('2024-01');
+    expect(res.body.data[1].period).toBe('2024-02');
   });
 
   it('200 — returns weight in requested unit (lb)', async () => {
@@ -110,19 +111,30 @@ describe('GET /workouts/progress', () => {
       )
       .expect(200);
 
-    expect(res.body.data.series[0].bestWeight).toBeCloseTo(220.46, 0);
-    expect(res.body.data.series[0].unit).toBe('lb');
+    expect(res.body.data[0].bestWeight).toBeCloseTo(220.46, 0);
+    expect(res.body.unit).toBe('lb');
   });
 
-  it('200 — single data point returns series with note about insufficient data', async () => {
+  it('200 — single data point returns insufficientData=true', async () => {
     await logEntry(app, '2024-01-15', 100);
 
     const res = await request(app.getHttpServer())
       .get(`/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}`)
       .expect(200);
 
-    expect(res.body.data.series).toHaveLength(1);
-    expect(res.body.data.note).toBe('Insufficient data for trend analysis');
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.insufficientData).toBe(true);
+  });
+
+  it('200 — two data points returns insufficientData=false', async () => {
+    await logEntry(app, '2024-01-15', 100);
+    await logEntry(app, '2024-01-16', 105);
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}`)
+      .expect(200);
+
+    expect(res.body.insufficientData).toBe(false);
   });
 
   it('400 — missing exerciseName returns 400', async () => {

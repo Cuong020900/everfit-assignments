@@ -11,7 +11,7 @@ export interface WorkoutData {
 export type InsightResult = any;
 
 export interface InsightPlugin {
-  readonly key: string;
+  readonly name: string;
   compute(data: WorkoutData): InsightResult;
 }
 

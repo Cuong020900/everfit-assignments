@@ -1,98 +1,439 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Workout Tracking API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A personal workout logging REST API built with NestJS, TypeScript, PostgreSQL, and TypeORM. It lets users log workout sessions, track personal records, analyse progress over time, and surface training insights — all through a clean, well-structured HTTP interface.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Quick Start (Docker)](#quick-start-docker)
+- [Local Development](#local-development)
+- [API Reference](#api-reference)
+  - [POST /workouts — Log a workout](#post-workouts--log-a-workout)
+  - [GET /workouts — Workout history](#get-workouts--workout-history)
+  - [GET /workouts/pr — Personal records](#get-workoutspr--personal-records)
+  - [GET /workouts/progress — Progress over time](#get-workoutsprogress--progress-over-time)
+  - [GET /workouts/insights — Training insights](#get-workoutsinsights--training-insights)
+- [Database Schema](#database-schema)
+- [Technical Decisions & Trade-offs](#technical-decisions--trade-offs)
+- [Running Tests](#running-tests)
 
-## Project setup
+---
+
+## Quick Start (Docker)
+
+The fastest way to run the project. Starts the API on port 3000 and a PostgreSQL instance — no local Node or database setup needed.
 
 ```bash
-$ pnpm install
+docker compose up --build
 ```
 
-## Compile and run the project
+Optionally seed exercise metadata (muscle group mappings for the insights endpoint):
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm seed:docker
 ```
 
-## Run tests
+The API is available at `http://localhost:3000`.
+
+---
+
+## Local Development
 
 ```bash
-# unit tests
-$ pnpm run test
+# 1. Install dependencies
+pnpm install
 
-# e2e tests
-$ pnpm run test:e2e
+# 2. Copy environment config
+cp .env.example .env
 
-# test coverage
-$ pnpm run test:cov
+# 3. Start only the database (Docker)
+docker compose up db
+
+# 4. Run the dev server with hot reload
+pnpm start:dev
 ```
 
-## Deployment
+The server starts on port 3000 by default. All configuration is via environment variables — see `.env.example` for available options.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| Variable       | Default          | Notes                          |
+| -------------- | ---------------- | ------------------------------ |
+| `DB_HOST`      | `localhost`      |                                |
+| `DB_PORT`      | `5432`           | Test DB uses `5433`            |
+| `DB_NAME`      | `workout_db`     | Test DB uses `workout_test_db` |
+| `DB_USER`      | `workout`        |                                |
+| `DB_PASSWORD`  | `workout`        |                                |
+| `PORT`         | `3000`           |                                |
+| `LOG_LEVEL`    | `info`           |                                |
+| `CORS_ORIGINS` | *(all)*          | Comma-separated list           |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
+
+## API Reference
+
+Every response includes a `meta.requestId` field for tracing. Errors follow a consistent shape:
+
+```json
+{ "statusCode": 400, "error": "Bad Request", "message": "EMPTY_ENTRIES" }
+```
+
+---
+
+### POST /workouts — Log a workout
+
+Records a workout session for a user. Each session contains one or more exercise entries, each with one or more sets. Both `kg` and `lb` units are accepted; `weight_kg` is normalised at write time.
+
+**Query params**
+
+| Param    | Required | Description    |
+| -------- | -------- | -------------- |
+| `userId` | ✅        | UUID of the user |
+
+**Request body**
+
+```json
+{
+  "date": "2024-01-15",
+  "entries": [
+    {
+      "exerciseName": "Bench Press",
+      "sets": [
+        { "reps": 10, "weight": 80, "unit": "kg" }
+      ]
+    }
+  ]
+}
+```
+
+**Response 201**
+
+```json
+{
+  "date": "2024-01-15",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "entries": [
+    {
+      "id": "uuid",
+      "exerciseName": "Bench Press",
+      "sets": [
+        {
+          "id": "uuid",
+          "reps": 10,
+          "weight": 80,
+          "unit": "kg",
+          "weightKg": 80
+        }
+      ],
+      "createdAt": "2024-01-15T10:00:00.000Z"
+    }
+  ],
+  "meta": { "requestId": "req_abc123" }
+}
+```
+
+**Error codes**
+
+| Code              | Status | Meaning                            |
+| ----------------- | ------ | ---------------------------------- |
+| `EMPTY_ENTRIES`   | 400    | `entries` array is empty           |
+| `INVALID_DATE`    | 400    | Date is not a valid `YYYY-MM-DD`   |
+| `INVALID_USER_ID` | 400    | `userId` is not a valid UUID       |
+
+---
+
+### GET /workouts — Workout history
+
+Returns a paginated list of workout entries for a user, ordered by date descending. Supports cursor-based pagination, date range filtering, and exercise name search.
+
+**Query params**
+
+| Param          | Required | Default | Description                              |
+| -------------- | -------- | ------- | ---------------------------------------- |
+| `userId`       | ✅        | —       | UUID of the user                         |
+| `limit`        |          | `20`    | Max entries per page (1–100)             |
+| `cursor`       |          | —       | Opaque pagination cursor from previous response |
+| `exerciseName` |          | —       | Partial match filter (case-insensitive)  |
+| `from`         |          | —       | Start date `YYYY-MM-DD` (inclusive)      |
+| `to`           |          | —       | End date `YYYY-MM-DD` (inclusive)        |
+
+**Response 200**
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "date": "2024-01-15",
+      "exerciseName": "Bench Press",
+      "sets": [
+        { "id": "uuid", "reps": 10, "weight": 80, "unit": "kg", "weightKg": 80 }
+      ]
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "eyJkYXRlIjoiMjAyNC0wMS0xNSIsImlkIjoidXVpZCJ9"
+  },
+  "meta": { "requestId": "req_abc123" }
+}
+```
+
+---
+
+### GET /workouts/pr — Personal records
+
+Returns personal records per exercise. Supports optional period filtering and comparison against a previous period of the same length.
+
+**Query params**
+
+| Param          | Required | Default | Description                                        |
+| -------------- | -------- | ------- | -------------------------------------------------- |
+| `userId`       | ✅        | —       | UUID of the user                                   |
+| `exerciseName` |          | —       | Exact match filter                                 |
+| `from`         |          | —       | Start date `YYYY-MM-DD`                            |
+| `to`           |          | —       | End date `YYYY-MM-DD`                              |
+| `unit`         |          | `kg`    | Output unit: `kg` or `lb`                          |
+| `compareTo`    |          | —       | Set to `previousPeriod` to include delta comparison |
+
+**Response 200**
+
+```json
+{
+  "data": [
+    {
+      "exerciseName": "Bench Press",
+      "prs": {
+        "maxWeight": {
+          "value": 100,
+          "unit": "kg",
+          "reps": 5,
+          "achievedAt": "2024-01-15"
+        },
+        "maxVolume": {
+          "value": 2400,
+          "unit": "kg",
+          "reps": 10,
+          "achievedAt": "2024-01-10"
+        },
+        "bestOneRM": {
+          "value": 116.7,
+          "unit": "kg",
+          "reps": 5,
+          "achievedAt": "2024-01-15"
+        }
+      },
+      "comparison": {
+        "period":     { "from": "2024-01-01", "to": "2024-01-31" },
+        "prevPeriod": { "from": "2023-12-01", "to": "2023-12-31" },
+        "maxWeight":  { "current": 100, "previous": 90, "deltaKg": 10, "deltaPct": 11.1 }
+      }
+    }
+  ],
+  "meta": { "requestId": "req_abc123" }
+}
+```
+
+The `comparison` field is only present when `compareTo=previousPeriod` is passed.
+
+One-rep max (1RM) is estimated using the **Epley formula**: `weight × (1 + reps / 30)`.
+
+---
+
+### GET /workouts/progress — Progress over time
+
+Shows how a single exercise's best weight and total volume have changed over weekly or monthly periods.
+
+**Query params**
+
+| Param          | Required | Default  | Description                          |
+| -------------- | -------- | -------- | ------------------------------------ |
+| `userId`       | ✅        | —        | UUID of the user                     |
+| `exerciseName` | ✅        | —        | Exact exercise name                  |
+| `from`         |          | —        | Start date `YYYY-MM-DD`              |
+| `to`           |          | —        | End date `YYYY-MM-DD`                |
+| `groupBy`      |          | `week`   | Granularity: `week` or `month`       |
+| `unit`         |          | `kg`     | Output unit: `kg` or `lb`            |
+
+**Response 200**
+
+```json
+{
+  "exerciseName": "Bench Press",
+  "groupBy": "week",
+  "unit": "kg",
+  "data": [
+    { "period": "2024-W02", "bestWeight": 95, "volume": 2280 },
+    { "period": "2024-W03", "bestWeight": 97.5, "volume": 2450 }
+  ],
+  "insufficientData": false,
+  "meta": { "requestId": "req_abc123" }
+}
+```
+
+`insufficientData: true` is returned when fewer than 2 data points are available for a meaningful trend.
+
+---
+
+### GET /workouts/insights — Training insights
+
+Analyses a user's training over a period and returns a set of structured insight payloads. Each insight is independently computed by a plugin.
+
+**Query params**
+
+| Param    | Required | Description                         |
+| -------- | -------- | ----------------------------------- |
+| `userId` | ✅        | UUID of the user                    |
+| `from`   |          | Start date `YYYY-MM-DD`             |
+| `to`     |          | End date `YYYY-MM-DD`               |
+
+**Response 200**
+
+```json
+{
+  "period": { "from": "2024-01-01", "to": "2024-01-31" },
+  "insights": [
+    {
+      "name": "most-trained",
+      "data": {
+        "byFrequency": [{ "exercise": "Bench Press", "sessionCount": 8 }],
+        "byVolume":    [{ "exercise": "Squat", "totalVolumeKg": 12000 }]
+      }
+    },
+    {
+      "name": "training-frequency",
+      "data": {
+        "sessionsPerWeek": 4.2,
+        "totalSessions": 18,
+        "weeksAnalyzed": 4.3
+      }
+    },
+    {
+      "name": "muscle-group-balance",
+      "data": {
+        "distribution": { "chest": 35, "legs": 40, "back": 25 },
+        "warnings": ["back volume is lower than recommended"]
+      }
+    },
+    {
+      "name": "neglected-exercise",
+      "data": {
+        "exercises": [{ "name": "Deadlift", "lastSeenDaysAgo": 21 }]
+      }
+    }
+  ],
+  "meta": { "requestId": "req_abc123" }
+}
+```
+
+---
+
+## Database Schema
+
+### `workout_entries`
+
+| Column          | Type        | Notes                                    |
+| --------------- | ----------- | ---------------------------------------- |
+| `id`            | `uuid` PK   | Generated UUID                           |
+| `user_id`       | `uuid`      | No FK — referential integrity at app layer |
+| `date`          | `DATE`      | Stored and returned as `'YYYY-MM-DD'` string |
+| `exercise_name` | `varchar`   |                                          |
+| `created_at`    | `timestamp` |                                          |
+| `updated_at`    | `timestamp` |                                          |
+
+**Index:** composite `(user_id, date DESC, id DESC)` — supports cursor pagination efficiently.
+
+### `workout_sets`
+
+| Column      | Type          | Notes                                           |
+| ----------- | ------------- | ----------------------------------------------- |
+| `id`        | `uuid` PK     |                                                 |
+| `entry_id`  | `uuid`        | References `workout_entries.id` (app-level FK)  |
+| `reps`      | `int`         |                                                 |
+| `weight`    | `decimal`     | As entered by the user (kg or lb)               |
+| `unit`      | `varchar`     | `'kg'` or `'lb'`                                |
+| `weight_kg` | `decimal`     | Normalised to kg at write time                  |
+| `created_at`| `timestamp`   |                                                 |
+| `updated_at`| `timestamp`   |                                                 |
+
+### `exercise_metadata`
+
+| Column         | Type       | Notes                                  |
+| -------------- | ---------- | -------------------------------------- |
+| `name`         | `varchar` PK | Canonical exercise name              |
+| `muscle_group` | `varchar`  | Used by the muscle-group-balance insight |
+| `aliases`      | `varchar[]`| Alternative names for the same exercise |
+
+---
+
+## Technical Decisions & Trade-offs
+
+### Repository pattern
+
+All services depend on `IWorkoutRepository` (injected via token, not the concrete TypeORM class). Unit tests swap the real implementation for an in-memory mock — no database required. Integration tests wire the real TypeORM repository against a dedicated test DB.
+
+### `weight_kg` stored at write time
+
+Unit conversion (kg / lb → kg) happens once during ingest. All aggregations (`SUM`, `MAX`) run directly on `weight_kg` — no `CASE` expressions or function calls in GROUP BY queries.
+
+### DATE column as string
+
+The `pg` driver returns PostgreSQL `DATE` values as `'YYYY-MM-DD'` strings. Wrapping them in `new Date()` introduces timezone shifts depending on the runtime environment. Storing and reading the value as a string is intentional and avoids that class of bug.
+
+### Cursor-based pagination
+
+History is paginated with a base64url-encoded `{ date, id }` composite cursor, backed by a matching `(user_id, date DESC, id DESC)` composite index. Unlike offset-based pagination, cursors remain stable when new rows are inserted mid-pagination — no skipped or duplicated results.
+
+### Plugin system for insights
+
+Each insight is an `InsightPlugin` class registered as a NestJS multi-provider (`{ provide: INSIGHT_PLUGINS, useClass: ..., multi: true }`). `GetInsightsService` receives `InsightPlugin[]` and calls each plugin independently. Adding a new insight requires one new class and one provider registration — no changes to existing code (Open/Closed Principle).
+
+### No authentication
+
+Out of scope for this assignment. `userId` is passed as a query parameter on every request.
+
+### Trade-offs
+
+| Area                     | Current approach                          | At higher scale                               |
+| ------------------------ | ----------------------------------------- | --------------------------------------------- |
+| **PR query performance** | Composite index; no cache                 | Add Redis cache for frequent PR lookups       |
+| **Exercise name matching** | History: ILIKE (partial); PR/Progress: exact match | Add a normalisation layer or full-text index |
+| **Referential integrity** | App-layer only; no FK constraints in DB  | Add FK constraints if DB is shared across services |
+| **Authentication**       | `userId` query param; no auth             | JWT middleware; extract userId from token     |
+
+---
+
+## Running Tests
+
+### Unit tests (no database required)
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm test
+pnpm test:watch    # watch mode
+pnpm test:cov      # with coverage report
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Integration tests (requires test database)
 
-## Resources
+```bash
+# Start the test database on port 5433
+docker compose up db-test
 
-Check out a few resources that may come in handy when working with NestJS:
+# Run integration tests
+pnpm test:integration
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Run a single test file
 
-## Support
+```bash
+pnpm test -- --testPathPattern=log-workout
+pnpm test:integration -- --testPathPattern=get-pr
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Test architecture
 
-## Stay in touch
+| Type            | Location                        | DB needed       |
+| --------------- | ------------------------------- | --------------- |
+| **Unit**        | `test/unit/**/*.spec.ts`        | No              |
+| **Integration** | `test/integration/**/*.spec.ts` | Yes (port 5433) |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Unit tests use a `createMockRepository()` factory that returns a typed in-memory mock of `IWorkoutRepository`. Integration tests boot the full NestJS application in-process via `Test.createTestingModule()` and hit it with Supertest over HTTP.

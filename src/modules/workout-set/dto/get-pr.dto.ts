@@ -1,33 +1,45 @@
 import { CompareTo } from '@src/shared/enums/compare-to.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
-import type { ApiResult } from '@src/shared/types/api-response.type';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export interface PRRecord {
-  weight: number;
+export interface PRValue {
+  value: number;
   unit: string;
-  date: string;
-}
-
-export interface VolumeRecord extends PRRecord {
   reps: number;
+  achievedAt: string; // YYYY-MM-DD
 }
 
-export interface OneRMRecord {
-  estimated1RM: number;
-  unit: string;
-  date: string;
+export interface PRSet {
+  maxWeight: PRValue | null;
+  maxVolume: PRValue | null;
+  bestOneRM: PRValue | null;
 }
 
-export interface PRData {
-  maxWeight: PRRecord | null;
-  maxVolume: VolumeRecord | null;
-  best1RM: OneRMRecord | null;
-  previous?: PRData | null;
+export interface ComparisonValue {
+  current: number;
+  previous: number;
+  deltaKg: number;
+  deltaPct: number;
 }
 
-export interface GetPRResult extends ApiResult<PRData> {}
+export interface PRComparison {
+  period: { from: string; to: string };
+  prevPeriod: { from: string; to: string };
+  maxWeight?: ComparisonValue;
+  maxVolume?: ComparisonValue;
+  bestOneRM?: ComparisonValue;
+}
+
+export interface PRExerciseResult {
+  exerciseName: string;
+  prs: PRSet;
+  comparison?: PRComparison;
+}
+
+export interface GetPRResult {
+  data: PRExerciseResult[];
+}
 
 export class GetPRDTO {
   @IsUUID()

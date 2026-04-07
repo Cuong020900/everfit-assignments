@@ -10,8 +10,8 @@ const makeData = (entries: WorkoutData['entries'], to?: string): WorkoutData => 
 describe('GapsPlugin', () => {
   const plugin = new GapsPlugin();
 
-  it('returns empty array for no data', () => {
-    expect(plugin.compute(makeData([]))).toEqual([]);
+  it('returns { exercises: [] } for no data', () => {
+    expect(plugin.compute(makeData([]))).toEqual({ exercises: [] });
   });
 
   it('flags exercise not done in 2+ weeks that was previously regular', () => {
@@ -29,10 +29,9 @@ describe('GapsPlugin', () => {
       ),
     );
 
-    expect(result).toHaveLength(1);
-    expect(result[0].exerciseName).toBe('Bench');
-    expect(result[0].lastPerformed).toBe('2024-01-15');
-    expect(result[0].daysSince).toBe(31);
+    expect(result.exercises).toHaveLength(1);
+    expect(result.exercises[0].name).toBe('Bench');
+    expect(result.exercises[0].lastSeenDaysAgo).toBe(31);
   });
 
   it('does not flag exercise done within 14 days of to date', () => {
@@ -47,7 +46,7 @@ describe('GapsPlugin', () => {
       ),
     );
 
-    expect(result).toHaveLength(0);
+    expect(result.exercises).toHaveLength(0);
   });
 
   it('does not flag exercise done only once (not regular)', () => {
@@ -56,12 +55,12 @@ describe('GapsPlugin', () => {
       makeData([{ date: '2024-01-01', exerciseName: 'Bench', muscleGroup: 'chest', sets: [] }], to),
     );
 
-    expect(result).toHaveLength(0);
+    expect(result.exercises).toHaveLength(0);
   });
 
   it('uses today as to date when not provided (empty entries)', () => {
     const result = plugin.compute(makeData([]));
-    expect(Array.isArray(result)).toBe(true);
+    expect(Array.isArray(result.exercises)).toBe(true);
   });
 
   it('uses today as to date when not provided (with entries)', () => {
@@ -74,8 +73,8 @@ describe('GapsPlugin', () => {
       ]),
     );
     // No to provided — uses today. Last session was years ago, will always be flagged.
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThanOrEqual(1);
+    expect(Array.isArray(result.exercises)).toBe(true);
+    expect(result.exercises.length).toBeGreaterThanOrEqual(1);
   });
 
   it('uses explicit to date when provided with actual entries', () => {
@@ -90,9 +89,9 @@ describe('GapsPlugin', () => {
       ),
     );
     // 2 sessions, last on 2024-01-08, 52 days before to — should be flagged
-    expect(result).toHaveLength(1);
-    expect(result[0].exerciseName).toBe('Deadlift');
-    expect(result[0].daysSince).toBeGreaterThan(14);
+    expect(result.exercises).toHaveLength(1);
+    expect(result.exercises[0].name).toBe('Deadlift');
+    expect(result.exercises[0].lastSeenDaysAgo).toBeGreaterThan(14);
   });
 
   it('deduplicates entries with the same date for an exercise', () => {
@@ -110,8 +109,12 @@ describe('GapsPlugin', () => {
     );
     // After dedup, 2 unique dates: Jan 1 and Jan 8 — both in 28-day window → regular
     // Last date Jan 8, 38 days before Feb 15 → flagged
-    expect(result).toHaveLength(1);
-    expect(result[0].exerciseName).toBe('Squat');
-    expect(result[0].lastPerformed).toBe('2024-01-08');
+    expect(result.exercises).toHaveLength(1);
+    expect(result.exercises[0].name).toBe('Squat');
+    expect(result.exercises[0].lastSeenDaysAgo).toBe(38);
+  });
+
+  it('has the correct plugin name', () => {
+    expect(plugin.name).toBe('gaps');
   });
 });

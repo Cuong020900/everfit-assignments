@@ -5,7 +5,10 @@ import type {
   GetHistoryDTO,
   GetHistoryResult,
 } from '@src/modules/workout-entry/dto/get-history.dto';
-import type { LogWorkoutDTO } from '@src/modules/workout-entry/dto/log-workout.dto';
+import type {
+  LogWorkoutDTO,
+  LogWorkoutResult,
+} from '@src/modules/workout-entry/dto/log-workout.dto';
 import { fromKg, toKg } from '@src/shared/units/unit-converter';
 
 @Injectable()
@@ -15,7 +18,7 @@ export class WorkoutEntryService {
     private readonly repo: IWorkoutEntryRepository,
   ) {}
 
-  async logWorkout(userId: string, dto: LogWorkoutDTO): Promise<void> {
+  async logWorkout(userId: string, dto: LogWorkoutDTO): Promise<LogWorkoutResult> {
     const entries = dto.entries.map((entry) => ({
       exerciseName: entry.exerciseName,
       sets: entry.sets.map((set) => ({
@@ -26,7 +29,9 @@ export class WorkoutEntryService {
       })),
     }));
 
-    await this.repo.saveEntries(userId, dto.date, entries);
+    const saved = await this.repo.saveEntries(userId, dto.date, entries);
+
+    return { date: dto.date, userId, entries: saved };
   }
 
   async getHistory(dto: GetHistoryDTO): Promise<GetHistoryResult> {
