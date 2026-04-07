@@ -17,6 +17,7 @@ A personal workout logging REST API built with NestJS, TypeScript, PostgreSQL, a
 - [Database Schema](#database-schema)
 - [Technical Decisions & Trade-offs](#technical-decisions--trade-offs)
 - [Running Tests](#running-tests)
+- [Performance & Stress Testing](#performance--stress-testing)
 
 ---
 
@@ -437,3 +438,66 @@ pnpm test:integration -- --testPathPattern=get-pr
 | **Integration** | `test/integration/**/*.spec.ts` | Yes (port 5433) |
 
 Unit tests use a `createMockRepository()` factory that returns a typed in-memory mock of `IWorkoutRepository`. Integration tests boot the full NestJS application in-process via `Test.createTestingModule()` and hit it with Supertest over HTTP.
+
+---
+
+## Performance & Stress Testing
+
+Two scripts are provided:
+
+- `scripts/benchmark-multi-user.sh` for large-dataset DB + API benchmark reports
+- `scripts/stress-api-concurrency.sh` for API concurrency stress reports (prefers `k6`, falls back to `curl`)
+
+### 1) Large dataset benchmark (multi-user)
+
+This script resets the test DB schema, runs migrations, inserts synthetic data for multiple users, then benchmarks SQL and API read paths.
+
+```bash
+# Example: 5 users x 50k entries each
+USERS_COUNT=5 ENTRIES_PER_USER=50000 ./scripts/benchmark-multi-user.sh
+```
+
+Output report:
+
+- `docs/benchmark-report-<timestamp>.md`
+
+### 2) API concurrency stress test (k6-first)
+
+This script captures machine/docker resource info, runs concurrent API calls across key endpoints, and writes latency/error metrics.
+
+```bash
+# Install k6 (macOS)
+brew install k6
+
+# Run stress test with multiple concurrency levels
+REQUESTS_PER_LEVEL=200 CONCURRENCY_LEVELS=10,20,50,100 ./scripts/stress-api-concurrency.sh
+```
+
+Output report:
+
+- `docs/stress-report-<timestamp>.md`
+
+### Useful environment variables
+
+```bash
+# Shared
+API_BASE_URL=http://localhost:3000
+REPORT_DIR=docs
+
+# benchmark-multi-user.sh
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=workout_test_db
+DB_USER=workout
+DB_PASSWORD=workout
+USERS_COUNT=5
+ENTRIES_PER_USER=50000
+SAMPLE_ROUNDS=20
+API_CONCURRENCY=20
+
+# stress-api-concurrency.sh
+USER_ID=<existing-user-uuid>
+REQUESTS_PER_LEVEL=200
+CONCURRENCY_LEVELS=10,20,50,100
+K6_TIMEOUT=30s
+```
