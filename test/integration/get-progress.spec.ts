@@ -131,7 +131,9 @@ describe('GET /workouts/progress', () => {
     await logEntry(app, '2024-01-16', 105);
 
     const res = await request(app.getHttpServer())
-      .get(`/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}`)
+      .get(
+        `/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}&groupBy=daily`,
+      )
       .expect(200);
 
     expect(res.body.insufficientData).toBe(false);

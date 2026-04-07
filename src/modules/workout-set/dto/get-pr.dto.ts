@@ -1,5 +1,6 @@
 import { CompareTo } from '@src/shared/enums/compare-to.enum';
 import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
@@ -42,25 +43,31 @@ export interface GetPRResult {
 }
 
 export class GetPRDTO {
+  @ApiProperty({ description: 'User UUID', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
   @IsUUID()
   userId!: string;
 
+  @ApiPropertyOptional({ description: 'Filter by exercise name', example: 'Bench Press' })
   @IsOptional()
   @IsString()
   exerciseName?: string;
 
+  @ApiPropertyOptional({ description: 'Start date (YYYY-MM-DD)', example: '2024-01-01' })
   @IsOptional()
   @IsDateString()
   from?: string;
 
+  @ApiPropertyOptional({ description: 'End date (YYYY-MM-DD)', example: '2024-01-31' })
   @IsOptional()
   @IsDateString()
   to?: string;
 
+  @ApiPropertyOptional({ description: 'Comparison period', enum: CompareTo })
   @IsOptional()
   @IsEnum(CompareTo)
   compareTo?: CompareTo;
 
+  @ApiPropertyOptional({ description: 'Weight unit for response', enum: WeightUnit, default: WeightUnit.KG })
   @IsOptional()
   @IsEnum(WeightUnit)
   @Transform(({ value }) => value ?? WeightUnit.KG)
