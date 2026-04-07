@@ -1,6 +1,7 @@
 import { WORKOUT_ENTRY_REPOSITORY } from '@src/model/repositories/workout-entry/workout-entry.repository.interface';
 import type { SavedWorkoutEntry } from '@src/model/repositories/workout-entry/workout-entry.repository.types';
 import { WorkoutEntryService } from '@src/modules/workout-entry/workout-entry.service';
+import { WeightUnit } from '@src/shared/enums/weight-unit.enum';
 import { createWorkoutEntryRepoMock } from '../repositories/workout-repository.mock';
 
 const USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
@@ -8,7 +9,7 @@ const USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const makeSavedEntry = (exerciseName: string): SavedWorkoutEntry => ({
   id: 'entry-uuid-1',
   exerciseName,
-  sets: [{ id: 'set-uuid-1', reps: 5, weight: 100, unit: 'kg', weightKg: 100 }],
+  sets: [{ id: 'set-uuid-1', reps: 5, weight: 100, unit: WeightUnit.KG, weightKg: 100 }],
   createdAt: '2024-01-15T00:00:00.000Z',
 });
 
@@ -29,13 +30,15 @@ describe('WorkoutEntryService.logWorkout()', () => {
 
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
-      entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] }],
+      entries: [
+        { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG }] },
+      ],
     });
 
     expect(repo.saveEntries).toHaveBeenCalledWith(USER_ID, '2024-01-15', [
       {
         exerciseName: 'Bench Press',
-        sets: [{ reps: 5, weight: 100, unit: 'kg', weightKg: 100 }],
+        sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG, weightKg: 100 }],
       },
     ]);
   });
@@ -45,7 +48,9 @@ describe('WorkoutEntryService.logWorkout()', () => {
 
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
-      entries: [{ exerciseName: 'Squat', sets: [{ reps: 3, weight: 220.46, unit: 'lb' }] }],
+      entries: [
+        { exerciseName: 'Squat', sets: [{ reps: 3, weight: 220.46, unit: WeightUnit.LB }] },
+      ],
     });
 
     const call = repo.saveEntries.mock.calls[0];
@@ -61,8 +66,8 @@ describe('WorkoutEntryService.logWorkout()', () => {
     await service.logWorkout(USER_ID, {
       date: '2024-01-15',
       entries: [
-        { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] },
-        { exerciseName: 'Squat', sets: [{ reps: 3, weight: 120, unit: 'kg' }] },
+        { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG }] },
+        { exerciseName: 'Squat', sets: [{ reps: 3, weight: 120, unit: WeightUnit.KG }] },
       ],
     });
 
@@ -77,7 +82,9 @@ describe('WorkoutEntryService.logWorkout()', () => {
 
     await service.logWorkout(USER_ID, {
       date: '2024-03-20',
-      entries: [{ exerciseName: 'Deadlift', sets: [{ reps: 1, weight: 200, unit: 'kg' }] }],
+      entries: [
+        { exerciseName: 'Deadlift', sets: [{ reps: 1, weight: 200, unit: WeightUnit.KG }] },
+      ],
     });
 
     expect(repo.saveEntries).toHaveBeenCalledWith(USER_ID, '2024-03-20', expect.any(Array));
@@ -89,7 +96,9 @@ describe('WorkoutEntryService.logWorkout()', () => {
 
     const result = await service.logWorkout(USER_ID, {
       date: '2024-01-15',
-      entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] }],
+      entries: [
+        { exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: WeightUnit.KG }] },
+      ],
     });
 
     expect(result.date).toBe('2024-01-15');

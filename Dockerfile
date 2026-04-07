@@ -2,8 +2,8 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable corepack — pnpm version is read from package.json "packageManager"
+RUN corepack enable
 
 # Install deps (separate layer for caching)
 COPY package.json pnpm-lock.yaml ./
@@ -18,7 +18,7 @@ RUN pnpm build
 FROM node:22-alpine AS runtime
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable
 
 # Only production deps
 COPY package.json pnpm-lock.yaml ./
