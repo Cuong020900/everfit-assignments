@@ -1,5 +1,7 @@
 # Workout Tracking API
 
+Walkthrough video: https://drive.google.com/file/d/1oGClSRdIeEwHr50E7wMTqIGgvrumgi7t/view?usp=sharing
+
 A personal workout logging REST API built with NestJS, TypeScript, PostgreSQL, and TypeORM. It lets users log workout sessions, track personal records, analyse progress over time, and surface training insights — all through a clean, well-structured HTTP interface.
 
 ---
@@ -98,7 +100,6 @@ pnpm start:dev
 
 The server starts on port 3000 by default. All configuration is via environment variables — see `.env.example` for available options.
 
-
 | Variable       | Default      | Notes                          |
 | -------------- | ------------ | ------------------------------ |
 | `DB_HOST`      | `localhost`  |                                |
@@ -108,8 +109,7 @@ The server starts on port 3000 by default. All configuration is via environment 
 | `DB_PASSWORD`  | `workout`    |                                |
 | `PORT`         | `3000`       |                                |
 | `LOG_LEVEL`    | `info`       |                                |
-| `CORS_ORIGINS` | *(all)*      | Comma-separated list           |
-
+| `CORS_ORIGINS` | _(all)_      | Comma-separated list           |
 
 ---
 
@@ -129,11 +129,9 @@ Records a workout session for a user. Each session contains one or more exercise
 
 **Query params**
 
-
 | Param    | Required | Description      |
 | -------- | -------- | ---------------- |
-| `userId` | ✅        | UUID of the user |
-
+| `userId` | ✅       | UUID of the user |
 
 **Request body**
 
@@ -143,9 +141,7 @@ Records a workout session for a user. Each session contains one or more exercise
   "entries": [
     {
       "exerciseName": "Bench Press",
-      "sets": [
-        { "reps": 10, "weight": 80, "unit": "kg" }
-      ]
+      "sets": [{ "reps": 10, "weight": 80, "unit": "kg" }]
     }
   ]
 }
@@ -179,13 +175,11 @@ Records a workout session for a user. Each session contains one or more exercise
 
 **Error codes**
 
-
 | Code              | Status | Meaning                          |
 | ----------------- | ------ | -------------------------------- |
 | `EMPTY_ENTRIES`   | 400    | `entries` array is empty         |
 | `INVALID_DATE`    | 400    | Date is not a valid `YYYY-MM-DD` |
 | `INVALID_USER_ID` | 400    | `userId` is not a valid UUID     |
-
 
 ---
 
@@ -195,16 +189,14 @@ Returns a paginated list of workout entries for a user, ordered by date descendi
 
 **Query params**
 
-
 | Param          | Required | Default | Description                                     |
 | -------------- | -------- | ------- | ----------------------------------------------- |
-| `userId`       | ✅        | —       | UUID of the user                                |
+| `userId`       | ✅       | —       | UUID of the user                                |
 | `limit`        |          | `20`    | Max entries per page (1–100)                    |
 | `cursor`       |          | —       | Opaque pagination cursor from previous response |
 | `exerciseName` |          | —       | Partial match filter (case-insensitive)         |
 | `from`         |          | —       | Start date `YYYY-MM-DD` (inclusive)             |
 | `to`           |          | —       | End date `YYYY-MM-DD` (inclusive)               |
-
 
 **Response 200**
 
@@ -236,16 +228,14 @@ Returns personal records per exercise. Supports optional period filtering and co
 
 **Query params**
 
-
 | Param          | Required | Default | Description                                         |
 | -------------- | -------- | ------- | --------------------------------------------------- |
-| `userId`       | ✅        | —       | UUID of the user                                    |
+| `userId`       | ✅       | —       | UUID of the user                                    |
 | `exerciseName` |          | —       | Exact match filter                                  |
 | `from`         |          | —       | Start date `YYYY-MM-DD`                             |
 | `to`           |          | —       | End date `YYYY-MM-DD`                               |
 | `unit`         |          | `kg`    | Output unit: `kg` or `lb`                           |
 | `compareTo`    |          | —       | Set to `previousPeriod` to include delta comparison |
-
 
 **Response 200**
 
@@ -275,9 +265,14 @@ Returns personal records per exercise. Supports optional period filtering and co
         }
       },
       "comparison": {
-        "period":     { "from": "2024-01-01", "to": "2024-01-31" },
+        "period": { "from": "2024-01-01", "to": "2024-01-31" },
         "prevPeriod": { "from": "2023-12-01", "to": "2023-12-31" },
-        "maxWeight":  { "current": 100, "previous": 90, "deltaKg": 10, "deltaPct": 11.1 }
+        "maxWeight": {
+          "current": 100,
+          "previous": 90,
+          "deltaKg": 10,
+          "deltaPct": 11.1
+        }
       }
     }
   ],
@@ -297,16 +292,14 @@ Shows how a single exercise's best weight and total volume have changed over wee
 
 **Query params**
 
-
 | Param          | Required | Default | Description                    |
 | -------------- | -------- | ------- | ------------------------------ |
-| `userId`       | ✅        | —       | UUID of the user               |
-| `exerciseName` | ✅        | —       | Exact exercise name            |
+| `userId`       | ✅       | —       | UUID of the user               |
+| `exerciseName` | ✅       | —       | Exact exercise name            |
 | `from`         |          | —       | Start date `YYYY-MM-DD`        |
 | `to`           |          | —       | End date `YYYY-MM-DD`          |
 | `groupBy`      |          | `week`  | Granularity: `week` or `month` |
 | `unit`         |          | `kg`    | Output unit: `kg` or `lb`      |
-
 
 **Response 200**
 
@@ -334,13 +327,11 @@ Analyses a user's training over a period and returns a set of structured insight
 
 **Query params**
 
-
 | Param    | Required | Description             |
 | -------- | -------- | ----------------------- |
-| `userId` | ✅        | UUID of the user        |
+| `userId` | ✅       | UUID of the user        |
 | `from`   |          | Start date `YYYY-MM-DD` |
 | `to`     |          | End date `YYYY-MM-DD`   |
-
 
 **Response 200**
 
@@ -352,7 +343,7 @@ Analyses a user's training over a period and returns a set of structured insight
       "name": "most-trained",
       "data": {
         "byFrequency": [{ "exercise": "Bench Press", "sessionCount": 8 }],
-        "byVolume":    [{ "exercise": "Squat", "totalVolumeKg": 12000 }]
+        "byVolume": [{ "exercise": "Squat", "totalVolumeKg": 12000 }]
       }
     },
     {
@@ -387,7 +378,6 @@ Analyses a user's training over a period and returns a set of structured insight
 
 ### `workout_entries`
 
-
 | Column          | Type        | Notes                                        |
 | --------------- | ----------- | -------------------------------------------- |
 | `id`            | `uuid` PK   | Generated UUID                               |
@@ -397,11 +387,9 @@ Analyses a user's training over a period and returns a set of structured insight
 | `created_at`    | `timestamp` |                                              |
 | `updated_at`    | `timestamp` |                                              |
 
-
 **Index:** composite `(user_id, date DESC, id DESC)` — supports cursor pagination efficiently.
 
 ### `workout_sets`
-
 
 | Column       | Type        | Notes                                          |
 | ------------ | ----------- | ---------------------------------------------- |
@@ -414,16 +402,13 @@ Analyses a user's training over a period and returns a set of structured insight
 | `created_at` | `timestamp` |                                                |
 | `updated_at` | `timestamp` |                                                |
 
-
 ### `exercise_metadata`
-
 
 | Column         | Type         | Notes                                    |
 | -------------- | ------------ | ---------------------------------------- |
 | `name`         | `varchar` PK | Canonical exercise name                  |
 | `muscle_group` | `varchar`    | Used by the muscle-group-balance insight |
 | `aliases`      | `varchar[]`  | Alternative names for the same exercise  |
-
 
 ---
 
@@ -455,14 +440,12 @@ Out of scope for this assignment. `userId` is passed as a query parameter on eve
 
 ### Trade-offs
 
-
 | Area                       | Current approach                                   | At higher scale                                    |
 | -------------------------- | -------------------------------------------------- | -------------------------------------------------- |
 | **PR query performance**   | Composite index; no cache                          | Add Redis cache for frequent PR lookups            |
 | **Exercise name matching** | History: ILIKE (partial); PR/Progress: exact match | Add a normalisation layer or full-text index       |
 | **Referential integrity**  | App-layer only; no FK constraints in DB            | Add FK constraints if DB is shared across services |
 | **Authentication**         | `userId` query param; no auth                      | JWT middleware; extract userId from token          |
-
 
 ---
 
@@ -495,12 +478,10 @@ pnpm test:integration -- --testPathPattern=get-pr
 
 ### Test architecture
 
-
 | Type            | Location                        | DB needed       |
 | --------------- | ------------------------------- | --------------- |
 | **Unit**        | `test/unit/**/*.spec.ts`        | No              |
 | **Integration** | `test/integration/**/*.spec.ts` | Yes (port 5433) |
-
 
 Unit tests use a `createMockRepository()` factory that returns a typed in-memory mock of `IWorkoutRepository`. Integration tests boot the full NestJS application in-process via `Test.createTestingModule()` and hit it with Supertest over HTTP.
 
@@ -599,4 +580,3 @@ REQUESTS_PER_LEVEL=200
 CONCURRENCY_LEVELS=10,20,50,100
 K6_TIMEOUT=30s
 ```
-
