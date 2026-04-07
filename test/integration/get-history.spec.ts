@@ -188,4 +188,98 @@ describe('GET /workouts (history)', () => {
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
   });
+
+  it('400 — invalid userId (not UUID format) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get('/workouts?userId=not-a-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid unit enum (unit=stone) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/workouts?userId=${USER_ID}&unit=stone`);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (from=15-01-2024) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts?userId=${USER_ID}&from=15-01-2024`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (to=not-a-date) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts?userId=${USER_ID}&to=not-a-date`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — limit=0 (below @Min(1)) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/workouts?userId=${USER_ID}&limit=0`);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('200 — limit=1 (exact minimum boundary) returns 200', async () => {
+    await logWorkout(app, USER_ID, '2024-01-15', 'Bench Press', [
+      { reps: 5, weight: 100, unit: 'kg' },
+    ]);
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_ID}&limit=1`)
+      .expect(200);
+
+    expect(res.body.data).toHaveLength(1);
+  });
+
+  it('200 — limit=100 (exact maximum boundary) returns 200', async () => {
+    for (let i = 1; i <= 100; i++) {
+      await logWorkout(app, USER_ID, `2024-01-${String(i % 28 || 28).padStart(2, '0')}`, 'Bench Press', [
+        { reps: 5, weight: 100, unit: 'kg' },
+      ]);
+    }
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_ID}&limit=100`)
+      .expect(200);
+
+    expect(res.body.data.length).toBeLessThanOrEqual(100);
+  });
+
+  it('400 — limit=abc (non-numeric string) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/workouts?userId=${USER_ID}&limit=abc`);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('200 — data isolation: User B cannot see User A entries', async () => {
+    const USER_A = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    const USER_B = 'f1f2f3f4-e5f6-7890-abcd-ef1234567890';
+
+    await logWorkout(app, USER_A, '2024-01-15', 'Bench Press', [
+      { reps: 5, weight: 100, unit: 'kg' },
+    ]);
+
+    const resA = await request(app.getHttpServer()).get(`/workouts?userId=${USER_A}`).expect(200);
+    const resB = await request(app.getHttpServer()).get(`/workouts?userId=${USER_B}`).expect(200);
+
+    expect(resA.body.data).toHaveLength(1);
+    expect(resB.body.data).toHaveLength(0);
+  });
+
+  it('200 — from > to (inverted range) returns 200 with empty results', async () => {
+    await logWorkout(app, USER_ID, '2024-01-15', 'Bench Press', [
+      { reps: 5, weight: 100, unit: 'kg' },
+    ]);
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts?userId=${USER_ID}&from=2024-02-01&to=2024-01-01`)
+      .expect(200);
+
+    expect(res.body.data).toEqual([]);
+    expect(res.body.pagination.nextCursor).toBeNull();
+  });
 });

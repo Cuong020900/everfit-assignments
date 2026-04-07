@@ -143,4 +143,26 @@ describe('GET /workouts/insights', () => {
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
   });
+
+  it('400 — invalid userId (not UUID format) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get('/workouts/insights?userId=not-a-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (from=not-a-date) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/insights?userId=${USER_ID}&from=not-a-date`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (to=bogus) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/insights?userId=${USER_ID}&to=bogus`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
 });

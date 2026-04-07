@@ -156,4 +156,44 @@ describe('POST /workouts', () => {
     expect(res.body).toHaveProperty('error');
     expect(res.body).toHaveProperty('message');
   });
+
+  it('400 — weight=0 (below @Min(0.001)) returns 400', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/workouts?userId=${USER_ID}`)
+      .send({
+        date: '2024-01-15',
+        entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 0, unit: 'kg' }] }],
+      });
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — reps=2.5 (float, not integer) returns 400', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/workouts?userId=${USER_ID}`)
+      .send({
+        date: '2024-01-15',
+        entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 2.5, weight: 100, unit: 'kg' }] }],
+      });
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('200 — data isolation: User A workout not visible to User B', async () => {
+    const USER_A = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    const USER_B = 'f1f2f3f4-e5f6-7890-abcd-ef1234567890';
+
+    const bodyA = {
+      date: '2024-01-15',
+      entries: [{ exerciseName: 'Bench Press', sets: [{ reps: 5, weight: 100, unit: 'kg' }] }],
+    };
+
+    await request(app.getHttpServer()).post(`/workouts?userId=${USER_A}`).send(bodyA).expect(201);
+
+    const historyA = await request(app.getHttpServer()).get(`/workouts?userId=${USER_A}`).expect(200);
+    const historyB = await request(app.getHttpServer()).get(`/workouts?userId=${USER_B}`).expect(200);
+
+    expect(historyA.body.data).toHaveLength(1);
+    expect(historyB.body.data).toHaveLength(0);
+  });
 });

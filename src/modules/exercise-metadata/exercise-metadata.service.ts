@@ -14,6 +14,7 @@ import {
 
 @Injectable()
 export class ExerciseMetadataService {
+  /* istanbul ignore next */
   constructor(
     @Inject(EXERCISE_METADATA_REPOSITORY)
     private readonly repo: IExerciseMetadataRepository,

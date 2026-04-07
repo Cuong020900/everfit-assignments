@@ -51,6 +51,26 @@ describe('MuscleGroupBalancePlugin', () => {
     expect(result.unknown).toBe(100);
   });
 
+  it('returns empty object when all sets have zero volume', () => {
+    const result = plugin.compute(
+      makeData([
+        {
+          date: '2024-01-01',
+          exerciseName: 'Bench',
+          muscleGroup: 'chest',
+          sets: [{ reps: 0, weightKg: 0 }],
+        },
+        {
+          date: '2024-01-01',
+          exerciseName: 'Squat',
+          muscleGroup: 'legs',
+          sets: [{ reps: 10, weightKg: 0 }],
+        },
+      ]),
+    );
+    expect(result).toEqual({});
+  });
+
   it('percentages sum to 100', () => {
     const result = plugin.compute(
       makeData([

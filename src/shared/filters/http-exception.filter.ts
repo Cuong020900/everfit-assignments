@@ -1,4 +1,4 @@
-import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
+import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Logger } from '@nestjs/common';
 import { ERROR_MESSAGES, KNOWN_ERROR_CODES } from '@src/shared/constants/error-codes';
 import type { Response } from 'express';
 
@@ -36,6 +36,8 @@ function extractFirstMessage(body: HttpExceptionBody): string {
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
@@ -61,7 +63,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    console.error('[GlobalExceptionFilter] Unhandled exception:', exception);
+    this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
     res.status(500).json({
       statusCode: 500,
       error: 'INTERNAL_ERROR',

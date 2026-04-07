@@ -138,4 +138,52 @@ describe('GET /workouts/progress', () => {
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
   });
+
+  it('400 — invalid userId (not UUID format) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=not-a-uuid&exerciseName=${encodeURIComponent(EXERCISE)}`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid unit enum (unit=stone) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}&unit=stone`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid groupBy enum (groupBy=quarterly) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}&groupBy=quarterly`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (from=not-a-date) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}&from=not-a-date`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (to=bogus) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=${USER_ID}&exerciseName=${encodeURIComponent(EXERCISE)}&to=bogus`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — exerciseName as empty string returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/progress?userId=${USER_ID}&exerciseName=`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
 });

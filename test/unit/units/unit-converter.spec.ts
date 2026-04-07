@@ -49,4 +49,50 @@ describe('UnitConverter', () => {
       expect(UNIT_TO_KG).toHaveProperty('lb');
     });
   });
+
+  describe('Edge cases: zero weight', () => {
+    it('toKg(0, "kg") returns 0', () => {
+      expect(toKg(0, 'kg')).toBe(0);
+    });
+
+    it('toKg(0, "lb") returns 0', () => {
+      expect(toKg(0, 'lb')).toBe(0);
+    });
+
+    it('fromKg(0, "kg") returns 0', () => {
+      expect(fromKg(0, 'kg')).toBe(0);
+    });
+
+    it('fromKg(0, "lb") returns 0', () => {
+      expect(fromKg(0, 'lb')).toBe(0);
+    });
+  });
+
+  describe('Case sensitivity', () => {
+    it('toKg(100, "KG") throws INVALID_UNIT (case sensitive)', () => {
+      expect(() => toKg(100, 'KG')).toThrow('INVALID_UNIT');
+    });
+
+    it('toKg(100, "LB") throws INVALID_UNIT (case sensitive)', () => {
+      expect(() => toKg(100, 'LB')).toThrow('INVALID_UNIT');
+    });
+
+    it('fromKg(100, "KG") throws INVALID_UNIT (case sensitive)', () => {
+      expect(() => fromKg(100, 'KG')).toThrow('INVALID_UNIT');
+    });
+  });
+
+  describe('Round-trip conversion', () => {
+    it('round-trip: fromKg(toKg(100.5, "lb"), "lb") ≈ 100.5 (within 0.01)', () => {
+      const converted = toKg(100.5, 'lb');
+      const backToLb = fromKg(converted, 'lb');
+      expect(backToLb).toBeCloseTo(100.5, 2);
+    });
+
+    it('round-trip: toKg(fromKg(50, "lb"), "lb") ≈ 50 (within 0.01)', () => {
+      const converted = fromKg(50, 'lb');
+      const backToKg = toKg(converted, 'lb');
+      expect(backToKg).toBeCloseTo(50, 2);
+    });
+  });
 });

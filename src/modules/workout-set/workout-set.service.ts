@@ -19,6 +19,7 @@ dayjs.extend(isoWeek);
 
 @Injectable()
 export class WorkoutSetService {
+  /* istanbul ignore next */
   constructor(
     @Inject(WORKOUT_SET_REPOSITORY)
     private readonly repo: IWorkoutSetRepository,

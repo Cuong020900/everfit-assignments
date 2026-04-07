@@ -1,6 +1,6 @@
 ---
 title: TDD Workout Services Implementation
-status: in_progress
+status: complete
 created: 2026-04-07
 blockedBy: []
 blocks: []
@@ -15,11 +15,11 @@ All services are currently empty stubs. Two existing tests are broken.
 
 | # | Phase | Status | File |
 |---|-------|--------|------|
-| 1 | Fix test infrastructure | 🔲 todo | [phase-01](phase-01-fix-test-infrastructure.md) |
-| 2 | WorkoutEntryService (log + history) | 🔲 todo | [phase-02](phase-02-workout-entry-service.md) |
-| 3 | WorkoutSetService (PR + progress) | 🔲 todo | [phase-03](phase-03-workout-set-service.md) |
-| 4 | ExerciseMetadataService (insights + plugins) | 🔲 todo | [phase-04](phase-04-exercise-metadata-service.md) |
-| 5 | Integration tests | 🔲 todo | [phase-05](phase-05-integration-tests.md) |
+| 1 | Fix test infrastructure | ✅ complete | [phase-01](phase-01-fix-test-infrastructure.md) |
+| 2 | WorkoutEntryService (log + history) | ✅ complete | [phase-02](phase-02-workout-entry-service.md) |
+| 3 | WorkoutSetService (PR + progress) | ✅ complete | [phase-03](phase-03-workout-set-service.md) |
+| 4 | ExerciseMetadataService (insights + plugins) | ✅ complete | [phase-04](phase-04-exercise-metadata-service.md) |
+| 5 | Integration tests | ✅ complete | [phase-05](phase-05-integration-tests.md) |
 
 ## Critical Path
 

@@ -157,4 +157,52 @@ describe('GET /workouts/pr', () => {
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ statusCode: 400 });
   });
+
+  it('400 — invalid userId (not UUID format) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get('/workouts/pr?userId=not-a-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid unit enum (unit=stone) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(`/workouts/pr?userId=${USER_ID}&unit=stone`);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid compareTo enum (compareTo=bogus) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/pr?userId=${USER_ID}&compareTo=bogus`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (from=not-a-date) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/pr?userId=${USER_ID}&from=not-a-date`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('400 — invalid date format (to=bogus) returns 400', async () => {
+    const res = await request(app.getHttpServer()).get(
+      `/workouts/pr?userId=${USER_ID}&to=bogus`,
+    );
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ statusCode: 400 });
+  });
+
+  it('200 — from > to (inverted range) returns 200 with all nulls', async () => {
+    await logEntry(app, USER_ID, '2024-01-15', 'Bench Press', [
+      { reps: 5, weight: 100, unit: 'kg' },
+    ]);
+
+    const res = await request(app.getHttpServer())
+      .get(`/workouts/pr?userId=${USER_ID}&from=2024-02-01&to=2024-01-01`)
+      .expect(200);
+
+    expect(res.body.data).toEqual({ maxWeight: null, maxVolume: null, best1RM: null });
+  });
 });

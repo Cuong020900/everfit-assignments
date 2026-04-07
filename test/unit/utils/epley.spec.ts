@@ -18,4 +18,24 @@ describe('epley1RM()', () => {
     const decimals = result.toString().split('.')[1]?.length ?? 0;
     expect(decimals).toBeLessThanOrEqual(4);
   });
+
+  describe('Edge cases: zero weight', () => {
+    it('epley1RM(100, 0) returns 100 (identity: weight × (1 + 0/30) = weight)', () => {
+      expect(epley1RM(100, 0)).toBe(100);
+    });
+
+    it('epley1RM(0, 5) returns 0', () => {
+      expect(epley1RM(0, 5)).toBe(0);
+    });
+  });
+
+  describe('Very high rep ranges', () => {
+    it('epley1RM(100, 30) amplifies by factor 2', () => {
+      expect(epley1RM(100, 30)).toBeCloseTo(200, 1);
+    });
+
+    it('epley1RM(100, 50) applies formula correctly', () => {
+      expect(epley1RM(100, 50)).toBeCloseTo(100 * (1 + 50 / 30), 2);
+    });
+  });
 });
